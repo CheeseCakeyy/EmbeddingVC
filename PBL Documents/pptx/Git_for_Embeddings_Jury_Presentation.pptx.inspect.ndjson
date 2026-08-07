@@ -1,0 +1,285 @@
+{"kind":"deck","id":"pr/h13iia","name":"Deck"}
+{"kind":"layout","layoutId":"c91112b6-8702-4e8f-b036-43cda39a902c","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"23d5a329-6fc6-4ad1-a98d-5931e6bbbe1d","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/lz63wh","slide":1,"title":"SEMESTER PBL  |  GROUP TYAIA116","textShapes":5}
+{"kind":"shape","id":"sh/vmx0rmdw","slide":1,"name":"cover-overlay","bbox":[0,0,650,720]}
+{"kind":"textbox","id":"sh/ulojihcb","slide":1,"name":"cover-kicker","text":"SEMESTER PBL  |  GROUP TYAIA116","textPreview":"SEMESTER PBL  |  GROUP TYAIA116","textChars":31,"textLines":1,"bbox":[58,54,480,30]}
+{"kind":"textbox","id":"sh/90vipcvq","slide":1,"name":"cover-title","text":"Git for\nEmbeddings","textPreview":"Git for | Embeddings","textChars":18,"textLines":2,"bbox":[58,150,520,190]}
+{"kind":"textbox","id":"sh/8zm1g7u5","slide":1,"name":"cover-subtitle","text":"Version control and incremental lifecycle management for vector embeddings","textPreview":"Version control and incremental lifecycle management for vector embeddings","textChars":74,"textLines":1,"bbox":[62,370,490,100]}
+{"kind":"textbox","id":"sh/7yd0n2dk","slide":1,"name":"cover-team","text":"Adwait Tagalpallewar  |  Sagar Shahgond  |  Archit Bankey  |  Parth Verma","textPreview":"Adwait Tagalpallewar  |  Sagar Shahgond  |  Archit Bankey  |  Parth Verma","textChars":73,"textLines":1,"bbox":[62,602,880,28]}
+{"kind":"textbox","id":"sh/mx4jexcf","slide":1,"name":"cover-guide","text":"Under the guidance of Prof. Dr. Nagesh Jadhav","textPreview":"Under the guidance of Prof. Dr. Nagesh Jadhav","textChars":45,"textLines":1,"bbox":[62,642,520,22]}
+{"kind":"image","id":"im/xgvehgzq","slide":1,"name":"","alt":"Documents transforming into chunks, embedding vectors, and semantic clusters, with changed vectors highlighted in amber.","bbox":[0,0,1280,720]}
+{"kind":"notes","id":"nt/lz63wh","slide":1,"text":"[Sources]\n- Local project source: PBL Documents/PBL_Synopsis_Git_for_Embeddingsv1.docx\n- OpenAI-generated visual: tmp/pptx/assets/embedding-hero.png; prompt recorded in tmp/pptx/source-notes.txt\n[/Sources]"}
+{"kind":"slide","id":"sl/0ozeqk","slide":2,"title":"THE PROBLEM","textShapes":13}
+{"kind":"textbox","id":"sh/ahwnyxoj","slide":2,"name":"eyebrow-2","text":"THE PROBLEM","textPreview":"THE PROBLEM","textChars":11,"textLines":1,"bbox":[48,28,700,28]}
+{"kind":"textbox","id":"sh/xk769sna","slide":2,"name":"title-2","text":"A small document change can trigger a full vector rebuild","textPreview":"A small document change can trigger a full vector rebuild","textChars":57,"textLines":1,"bbox":[48,58,1170,72]}
+{"kind":"shape","id":"sh/wje50n6p","slide":2,"name":"footer-line-2","bbox":[48,674,1138,1]}
+{"kind":"textbox","id":"sh/j6pob25g","slide":2,"name":"footer-label-2","text":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textPreview":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textChars":35,"textLines":1,"bbox":[48,682,420,18]}
+{"kind":"textbox","id":"sh/i5gn2xov","slide":2,"name":"footer-number-2","text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[1150,680,72,20]}
+{"kind":"textbox","id":"sh/5876dcn6","slide":2,"name":"problem-lead","text":"Embeddings are derived artifacts. They become outdated when source content, chunking, preprocessing, metadata, or the model changes.","textPreview":"Embeddings are derived artifacts. They become outdated when source content, chunking, preprocessing, metadata, or the model changes.","textChars":132,"textLines":1,"bbox":[50,150,540,125]}
+{"kind":"shape","id":"sh/k7yp476l","slide":2,"name":"problem-b1-dot","bbox":[52,320,7,7]}
+{"kind":"textbox","id":"sh/7apofm5c","slide":2,"name":"problem-b1","text":"Teams often regenerate every vector","textPreview":"Teams often regenerate every vector","textChars":35,"textLines":1,"bbox":[74,310,470,55]}
+{"kind":"shape","id":"sh/69g76hor","slide":2,"name":"problem-b2-dot","bbox":[52,395,7,7]}
+{"kind":"textbox","id":"sh/wrat4n6d","slide":2,"name":"problem-b2","text":"Old states are hard to reproduce or restore","textPreview":"Old states are hard to reproduce or restore","textChars":43,"textLines":1,"bbox":[74,385,470,55]}
+{"kind":"shape","id":"sh/xsjudsny","slide":2,"name":"problem-b3-dot","bbox":[52,470,7,7]}
+{"kind":"textbox","id":"sh/apsb2xon","slide":2,"name":"problem-b3","text":"Model and preprocessing provenance is easily lost","textPreview":"Model and preprocessing provenance is easily lost","textChars":49,"textLines":1,"bbox":[74,460,470,55]}
+{"kind":"shape","id":"sh/vq1cbi5s","slide":2,"name":"problem-field","bbox":[650,140,545,470]}
+{"kind":"textbox","id":"sh/kvut876p","slide":2,"name":"problem-field-title","text":"Today: rebuild or overwrite","textPreview":"Today: rebuild or overwrite","textChars":27,"textLines":1,"bbox":[690,175,465,42]}
+{"kind":"textbox","id":"sh/5w3uhcna","slide":2,"name":"problem-docs","text":"Changed\ndocuments","textPreview":"Changed | documents","textChars":17,"textLines":2,"bbox":[710,270,150,90]}
+{"kind":"textbox","id":"sh/itsb6xoj","slide":2,"name":"problem-all","text":"Regenerate\nall vectors","textPreview":"Regenerate | all vectors","textChars":22,"textLines":2,"bbox":[905,270,180,90]}
+{"kind":"textbox","id":"sh/ju1cf254","slide":2,"name":"problem-store","text":"Overwrite / new\ncollection","textPreview":"Overwrite / new | collection","textChars":26,"textLines":2,"bbox":[835,440,190,90]}
+{"kind":"shape","id":"sh/sjudc76l","slide":2,"bbox":[860,315,45,0]}
+{"kind":"shape","id":"sh/tk3ulcn6","slide":2,"bbox":[930,360,65,80]}
+{"kind":"textbox","id":"sh/1gzu5cfa","slide":2,"name":"problem-tag","text":"Correct - but often unnecessarily expensive","textPreview":"Correct - but often unnecessarily expensive","textChars":43,"textLines":1,"bbox":[745,560,360,30]}
+{"kind":"notes","id":"nt/0ozeqk","slide":2,"text":"[Sources]\n- Local project source: README.md, sections Why EmbedGit? and Problem statement\n- Local project source: PBL Documents/PBL_Synopsis_Git_for_Embeddingsv1.docx, sections 3-4\n[/Sources]"}
+{"kind":"slide","id":"sl/1lh07p","slide":3,"title":"WHY IT MATTERS","textShapes":12}
+{"kind":"textbox","id":"sh/krih07ap","slide":3,"name":"eyebrow-3","text":"WHY IT MATTERS","textPreview":"WHY IT MATTERS","textChars":14,"textLines":1,"bbox":[48,28,700,28]}
+{"kind":"textbox","id":"sh/zq9gr2t4","slide":3,"name":"title-3","text":"The same lifecycle problem appears across embedding-powered AI","textPreview":"The same lifecycle problem appears across embedding-powered AI","textChars":62,"textLines":1,"bbox":[48,58,1170,72]}
+{"kind":"shape","id":"sh/yp0zyxsz","slide":3,"name":"footer-line-3","bbox":[48,674,1138,1]}
+{"kind":"textbox","id":"sh/xorypcbe","slide":3,"name":"footer-label-3","text":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textPreview":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textChars":35,"textLines":1,"bbox":[48,682,420,18]}
+{"kind":"textbox","id":"sh/cnyhw7at","slide":3,"name":"footer-number-3","text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[1150,680,72,20]}
+{"kind":"textbox","id":"sh/bmpgn2t8","slide":3,"name":"apps-intro","text":"These systems depend on fresh, comparable, reproducible vectors.","textPreview":"These systems depend on fresh, comparable, reproducible vectors.","textChars":64,"textLines":1,"bbox":[50,132,760,46]}
+{"kind":"shape","id":"sh/algzuxsn","slide":3,"name":"apps-rule-0","bbox":[50,225,342,5]}
+{"kind":"textbox","id":"sh/hkbi1wbi","slide":3,"name":"apps-title-0","text":"RAG","textPreview":"RAG","textChars":3,"textLines":1,"bbox":[50,255,342,55]}
+{"kind":"textbox","id":"sh/wj2h8rax","slide":3,"name":"apps-body-0","text":"Retrieve trusted context before an LLM answers.","textPreview":"Retrieve trusted context before an LLM answers.","textChars":47,"textLines":1,"bbox":[50,335,330,120]}
+{"kind":"shape","id":"sh/ilk7u5o7","slide":3,"name":"apps-rule-1","bbox":[455,225,342,5]}
+{"kind":"textbox","id":"sh/3mto3aps","slide":3,"name":"apps-title-1","text":"Semantic search","textPreview":"Semantic search","textChars":15,"textLines":1,"bbox":[455,255,342,55]}
+{"kind":"textbox","id":"sh/4n2pwf6d","slide":3,"name":"apps-body-1","text":"Find meaning even when the words differ.","textPreview":"Find meaning even when the words differ.","textChars":40,"textLines":1,"bbox":[455,335,330,120]}
+{"kind":"shape","id":"sh/5ob65k7y","slide":3,"name":"apps-rule-2","bbox":[860,225,342,5]}
+{"kind":"textbox","id":"sh/ux0nq5ob","slide":3,"name":"apps-title-2","text":"Recommendations","textPreview":"Recommendations","textChars":15,"textLines":1,"bbox":[860,255,342,55]}
+{"kind":"textbox","id":"sh/vy9ozapw","slide":3,"name":"apps-body-2","text":"Match users, products, or content by learned similarity.","textPreview":"Match users, products, or content by learned similarity.","textChars":56,"textLines":1,"bbox":[860,335,330,120]}
+{"kind":"textbox","id":"sh/gjipsf6h","slide":3,"name":"apps-conclusion","text":"If the vectors are stale, retrieval quality, auditability, and downstream answers can all degrade.","textPreview":"If the vectors are stale, retrieval quality, auditability, and downstream answers can all degrade.","textChars":98,"textLines":1,"bbox":[80,535,1120,65]}
+{"kind":"notes","id":"nt/1lh07p","slide":3,"text":"[Sources]\n- Local project source: README.md, project overview and applications\n- Local project source: output/docx/Embeddings_and_Vector_Spaces_Team_Primer.docx, section Where embeddings are used\n[/Sources]"}
+{"kind":"slide","id":"sl/fmkuz1","slide":4,"title":"ILLUSTRATIVE EMBEDDING-DRIFT FAILURE","textShapes":17}
+{"kind":"textbox","id":"sh/q1wnydor","slide":4,"name":"eyebrow-4","text":"ILLUSTRATIVE EMBEDDING-DRIFT FAILURE","textPreview":"ILLUSTRATIVE EMBEDDING-DRIFT FAILURE","textChars":36,"textLines":1,"bbox":[48,28,700,28]}
+{"kind":"textbox","id":"sh/d4nmts72","slide":4,"name":"title-4","text":"A model mismatch can retrieve the wrong document","textPreview":"A model mismatch can retrieve the wrong document","textChars":48,"textLines":1,"bbox":[48,58,1170,72]}
+{"kind":"shape","id":"sh/c3e50n6h","slide":4,"name":"footer-line-4","bbox":[48,674,1138,1]}
+{"kind":"textbox","id":"sh/3el4nip0","slide":4,"name":"footer-label-4","text":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textPreview":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textChars":35,"textLines":1,"bbox":[48,682,420,18]}
+{"kind":"textbox","id":"sh/2dcnud8f","slide":4,"name":"footer-number-4","text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[1150,680,72,20]}
+{"kind":"textbox","id":"sh/pgnmp876","slide":4,"name":"drift-note","text":"Illustrative failure path - not a measured project result","textPreview":"Illustrative failure path - not a measured project result","textChars":57,"textLines":1,"bbox":[50,125,760,28]}
+{"kind":"shape","id":"sh/4fu5wnql","slide":4,"name":"drift-query-band","bbox":[75,165,1130,78]}
+{"kind":"textbox","id":"sh/fal4jyp4","slide":4,"name":"drift-query-label","text":"USER QUERY","textPreview":"USER QUERY","textChars":10,"textLines":1,"bbox":[105,184,150,24]}
+{"kind":"textbox","id":"sh/u9cnqt8j","slide":4,"name":"drift-query","text":"How do I reset my student portal password?","textPreview":"How do I reset my student portal password?","textChars":42,"textLines":1,"bbox":[265,178,880,44]}
+{"kind":"textbox","id":"sh/oje9gba5","slide":4,"name":"drift-index-title","text":"Stored document vectors","textPreview":"Stored document vectors","textChars":23,"textLines":1,"bbox":[75,285,330,40]}
+{"kind":"textbox","id":"sh/pk7qpgrq","slide":4,"name":"drift-index-body","text":"Embedded with Model A\nand preprocessing v1","textPreview":"Embedded with Model A | and preprocessing v1","textChars":42,"textLines":2,"bbox":[75,340,330,90]}
+{"kind":"shape","id":"sh/2xw7elsz","slide":4,"name":"drift-index-rule","bbox":[75,445,330,5]}
+{"kind":"textbox","id":"sh/3y58nq9k","slide":4,"name":"drift-query-title","text":"New query vector","textPreview":"New query vector","textChars":16,"textLines":1,"bbox":[475,285,285,40]}
+{"kind":"textbox","id":"sh/gvepcbat","slide":4,"name":"drift-query-body","text":"Embedded with Model B\nafter a deployment update","textPreview":"Embedded with Model B | after a deployment update","textChars":47,"textLines":2,"bbox":[475,340,285,90]}
+{"kind":"shape","id":"sh/1wnqlgre","slide":4,"name":"drift-query-rule","bbox":[475,445,285,5]}
+{"kind":"textbox","id":"sh/etw7a1s3","slide":4,"name":"drift-mismatch","text":"Same dimension\n≠ same vector space","textPreview":"Same dimension | ≠ same vector space","textChars":34,"textLines":2,"bbox":[790,330,205,95]}
+{"kind":"shape","id":"sh/fu58j69o","slide":4,"name":"drift-result-field","bbox":[1010,278,205,185]}
+{"kind":"textbox","id":"sh/0ri9ofad","slide":4,"name":"drift-result-tag","text":"TOP RESULT","textPreview":"TOP RESULT","textChars":10,"textLines":1,"bbox":[1030,302,165,24]}
+{"kind":"textbox","id":"sh/lsrqx0ry","slide":4,"name":"drift-result","text":"Faculty payroll\npassword policy","textPreview":"Faculty payroll | password policy","textChars":31,"textLines":2,"bbox":[1028,345,169,72]}
+{"kind":"textbox","id":"sh/98nq10j2","slide":4,"name":"drift-wrong","text":"WRONG CONTEXT","textPreview":"WRONG CONTEXT","textChars":13,"textLines":1,"bbox":[1030,425,165,22]}
+{"kind":"textbox","id":"sh/87ep8v2h","slide":4,"name":"drift-expected","text":"Expected: Student portal password-reset guide","textPreview":"Expected: Student portal password-reset guide","textChars":45,"textLines":1,"bbox":[75,490,730,36]}
+{"kind":"shape","id":"sh/7658zq1w","slide":4,"name":"drift-consequence-band","bbox":[75,545,1130,80]}
+{"kind":"textbox","id":"sh/m5c765kb","slide":4,"name":"drift-consequence","text":"Wrong nearest neighbour  →  wrong retrieved context  →  confident but incorrect answer","textPreview":"Wrong nearest neighbour  →  wrong retrieved context  →  confident but incorrect answer","textChars":86,"textLines":1,"bbox":[105,567,1070,38]}
+{"kind":"notes","id":"nt/fmkuz1","slide":4,"text":"[Sources]\n- Local project source: Git for Embeddings Project.pdf, Important Research Boundary and Semantic drift detection\n- Illustrative scenario authored for explanation; no benchmark result or observed user incident is claimed\n[/Sources]"}
+{"kind":"slide","id":"sl/8orkpk","slide":5,"title":"ILLUSTRATIVE UNIVERSITY-NOTES SCENARIO","textShapes":12}
+{"kind":"textbox","id":"sh/bats3ed0","slide":5,"name":"eyebrow-5","text":"ILLUSTRATIVE UNIVERSITY-NOTES SCENARIO","textPreview":"ILLUSTRATIVE UNIVERSITY-NOTES SCENARIO","textChars":38,"textLines":1,"bbox":[48,28,700,28]}
+{"kind":"textbox","id":"sh/cbm9cjul","slide":5,"name":"title-5","text":"Chunk-level tracking targets only the work that actually changed","textPreview":"Chunk-level tracking targets only the work that actually changed","textChars":64,"textLines":1,"bbox":[48,58,1170,72]}
+{"kind":"shape","id":"sh/dcva5ov6","slide":5,"name":"footer-line-5","bbox":[48,674,1138,1]}
+{"kind":"textbox","id":"sh/yd4retcr","slide":5,"name":"footer-label-5","text":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textPreview":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textChars":35,"textLines":1,"bbox":[48,682,420,18]}
+{"kind":"textbox","id":"sh/zyds7ydw","slide":5,"name":"footer-number-5","text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[1150,680,72,20]}
+{"kind":"textbox","id":"sh/0zm9gjuh","slide":5,"name":"scenario-note","text":"Illustrative scale from the project specification - not benchmark results","textPreview":"Illustrative scale from the project specification - not benchmark results","textChars":73,"textLines":1,"bbox":[50,126,760,28]}
+{"kind":"shape","id":"sh/l0va9ov2","slide":5,"name":"scenario-panel-0","bbox":[50,205,365,300]}
+{"kind":"textbox","id":"sh/eh0r2pw7","slide":5,"name":"scenario-stat-0","text":"100,000","textPreview":"100,000","textChars":7,"textLines":1,"bbox":[78,250,310,105]}
+{"kind":"textbox","id":"sh/f298vuds","slide":5,"name":"scenario-label-0","text":"total chunks / embeddings","textPreview":"total chunks / embeddings","textChars":25,"textLines":1,"bbox":[78,385,310,70]}
+{"kind":"shape","id":"sh/3ytgv6pw","slide":5,"name":"scenario-panel-1","bbox":[455,205,365,300]}
+{"kind":"textbox","id":"sh/ixkzm18b","slide":5,"name":"scenario-stat-1","text":"50","textPreview":"50","textChars":2,"textLines":1,"bbox":[483,250,310,105]}
+{"kind":"textbox","id":"sh/5kbyxw72","slide":5,"name":"scenario-label-1","text":"documents modified","textPreview":"documents modified","textChars":18,"textLines":1,"bbox":[483,385,310,70]}
+{"kind":"shape","id":"sh/4z2horqh","slide":5,"name":"scenario-panel-2","bbox":[860,205,365,300]}
+{"kind":"textbox","id":"sh/vutgrmp0","slide":5,"name":"scenario-stat-2","text":"Only changed chunks","textPreview":"Only changed chunks","textChars":19,"textLines":1,"bbox":[888,250,310,105]}
+{"kind":"textbox","id":"sh/ut0fih8f","slide":5,"name":"scenario-label-2","text":"regenerated by the proposed method","textPreview":"regenerated by the proposed method","textChars":34,"textLines":1,"bbox":[888,385,310,70]}
+{"kind":"textbox","id":"sh/hwbytw7q","slide":5,"name":"scenario-bottom","text":"Unchanged commits keep referencing existing immutable embedding objects.","textPreview":"Unchanged commits keep referencing existing immutable embedding objects.","textChars":72,"textLines":1,"bbox":[145,565,990,45]}
+{"kind":"notes","id":"nt/8orkpk","slide":5,"text":"[Sources]\n- Local project source: Git for Embeddings Project.pdf, example use case\n- Local project source: README.md, Illustrative university-notes use case\n[/Sources]"}
+{"kind":"slide","id":"sl/0gescr","slide":6,"title":"CORE DESIGN PRINCIPLE","textShapes":17}
+{"kind":"textbox","id":"sh/ml03yxs3","slide":6,"name":"eyebrow-6","text":"CORE DESIGN PRINCIPLE","textPreview":"CORE DESIGN PRINCIPLE","textChars":21,"textLines":1,"bbox":[48,28,700,28]}
+{"kind":"textbox","id":"sh/98b2tsre","slide":6,"name":"title-6","text":"The system versions four related states - without confusing them","textPreview":"The system versions four related states - without confusing them","textChars":64,"textLines":1,"bbox":[48,58,1170,72]}
+{"kind":"shape","id":"sh/872l0nat","slide":6,"name":"footer-line-6","bbox":[48,674,1138,1]}
+{"kind":"textbox","id":"sh/zi9kni9c","slide":6,"name":"footer-label-6","text":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textPreview":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textChars":35,"textLines":1,"bbox":[48,682,420,18]}
+{"kind":"textbox","id":"sh/yh03udsr","slide":6,"name":"footer-number-6","text":"6","textPreview":"6","textChars":1,"textLines":1,"bbox":[1150,680,72,20]}
+{"kind":"textbox","id":"sh/lkr2psri","slide":6,"name":"state-num-0","text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[55,190,55,60]}
+{"kind":"shape","id":"sh/0jilwnax","slide":6,"name":"state-line-0","bbox":[55,270,250,3]}
+{"kind":"textbox","id":"sh/jed4zm9g","slide":6,"name":"state-title-0","text":"Source documents","textPreview":"Source documents","textChars":16,"textLines":1,"bbox":[55,300,250,75]}
+{"kind":"textbox","id":"sh/idk36h8b","slide":6,"name":"state-body-0","text":"Content + metadata","textPreview":"Content + metadata","textChars":18,"textLines":1,"bbox":[55,400,250,110]}
+{"kind":"textbox","id":"sh/cje9grel","slide":6,"name":"state-num-1","text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[355,190,55,60]}
+{"kind":"shape","id":"sh/xknqpcf6","slide":6,"name":"state-line-1","bbox":[355,270,250,3]}
+{"kind":"textbox","id":"sh/ahw7ehgv","slide":6,"name":"state-title-1","text":"Chunks and objects","textPreview":"Chunks and objects","textChars":18,"textLines":1,"bbox":[355,300,250,75]}
+{"kind":"textbox","id":"sh/bi58nmxg","slide":6,"name":"state-body-1","text":"Deterministic text + vectors","textPreview":"Deterministic text + vectors","textChars":28,"textLines":1,"bbox":[355,400,250,110]}
+{"kind":"textbox","id":"sh/ofupc7yp","slide":6,"name":"state-num-2","text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[655,190,55,60]}
+{"kind":"shape","id":"sh/pg3qlcfa","slide":6,"name":"state-line-2","bbox":[655,270,250,3]}
+{"kind":"textbox","id":"sh/2dc7axgj","slide":6,"name":"state-title-2","text":"Model configuration","textPreview":"Model configuration","textChars":19,"textLines":1,"bbox":[655,300,250,75]}
+{"kind":"textbox","id":"sh/nel8j2x4","slide":6,"name":"state-body-2","text":"Revision, tokenizer, pooling, normalization","textPreview":"Revision, tokenizer, pooling, normalization","textChars":43,"textLines":1,"bbox":[655,400,250,110]}
+{"kind":"textbox","id":"sh/0bup87yt","slide":6,"name":"state-num-3","text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[955,190,55,60]}
+{"kind":"shape","id":"sh/1c3qhsfy","slide":6,"name":"state-line-3","bbox":[955,270,250,3]}
+{"kind":"textbox","id":"sh/h8v6lo72","slide":6,"name":"state-title-3","text":"Vector-store state","textPreview":"Vector-store state","textChars":18,"textLines":1,"bbox":[955,300,250,75]}
+{"kind":"textbox","id":"sh/g7m5cjqh","slide":6,"name":"state-body-3","text":"Searchable materialization of a commit","textPreview":"Searchable materialization of a commit","textChars":38,"textLines":1,"bbox":[955,400,250,110]}
+{"kind":"textbox","id":"sh/f6dojepw","slide":6,"name":"state-callout","text":"A commit links these states into one reproducible snapshot.","textPreview":"A commit links these states into one reproducible snapshot.","textChars":59,"textLines":1,"bbox":[180,570,920,44]}
+{"kind":"notes","id":"nt/0gescr","slide":6,"text":"[Sources]\n- Local project source: README.md, What is versioned?\n- Local project source: Git for Embeddings Project.pdf, README requirements and research boundary\n[/Sources]"}
+{"kind":"slide","id":"sl/hzy0vl","slide":7,"title":"PROPOSED ARCHITECTURE","textShapes":14}
+{"kind":"textbox","id":"sh/50bqtony","slide":7,"name":"eyebrow-7","text":"PROPOSED ARCHITECTURE","textPreview":"PROPOSED ARCHITECTURE","textChars":21,"textLines":1,"bbox":[48,28,700,28]}
+{"kind":"textbox","id":"sh/ixk7i9o7","slide":7,"name":"title-7","text":"Content hashes decide reuse before the embedding model is called","textPreview":"Content hashes decide reuse before the embedding model is called","textChars":64,"textLines":1,"bbox":[48,58,1170,72]}
+{"kind":"shape","id":"sh/3yt8re5s","slide":7,"name":"footer-line-7","bbox":[48,674,1138,1]}
+{"kind":"textbox","id":"sh/s32poj6p","slide":7,"name":"footer-label-7","text":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textPreview":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textChars":35,"textLines":1,"bbox":[48,682,420,18]}
+{"kind":"textbox","id":"sh/d4vqxonu","slide":7,"name":"footer-number-7","text":"7","textPreview":"7","textChars":1,"textLines":1,"bbox":[1150,680,72,20]}
+{"kind":"textbox","id":"sh/q1k7mtoj","slide":7,"name":"arch-docs","text":"Source\ndocuments","textPreview":"Source | documents","textChars":16,"textLines":2,"bbox":[55,250,150,95]}
+{"kind":"textbox","id":"sh/r2t8ve54","slide":7,"name":"arch-pipeline","text":"Load, normalize\nand chunk","textPreview":"Load, normalize | and chunk","textChars":25,"textLines":2,"bbox":[255,250,180,95]}
+{"kind":"textbox","id":"sh/87ipcz65","slide":7,"name":"arch-detector","text":"Hash + change\ndetection","textPreview":"Hash + change | detection","textChars":23,"textLines":2,"bbox":[495,250,185,95]}
+{"kind":"textbox","id":"sh/t8rql4nq","slide":7,"name":"arch-reuse","text":"Reuse immutable\nobject","textPreview":"Reuse immutable | object","textChars":22,"textLines":2,"bbox":[760,170,180,90]}
+{"kind":"textbox","id":"sh/tkvy58nm","slide":7,"name":"arch-embed","text":"Generate new\nembedding","textPreview":"Generate new | embedding","textChars":22,"textLines":2,"bbox":[760,355,180,90]}
+{"kind":"textbox","id":"sh/8jmhc3m1","slide":7,"name":"arch-commit","text":"Commit manifest\n+ refs","textPreview":"Commit manifest | + refs","textChars":22,"textLines":2,"bbox":[1015,250,170,95]}
+{"kind":"shape","id":"sh/7idg3y5g","slide":7,"bbox":[205,297.5,50,0]}
+{"kind":"shape","id":"sh/6h4zat4v","slide":7,"bbox":[435,297.5,60,0]}
+{"kind":"shape","id":"sh/h8fy9sni","slide":7,"bbox":[680,215,80,82.5]}
+{"kind":"shape","id":"sh/gn6hgnmx","slide":7,"bbox":[680,297.5,80,102.5]}
+{"kind":"shape","id":"sh/vmxg7i5c","slide":7,"bbox":[940,215,75,82.5]}
+{"kind":"shape","id":"sh/ul4zed47","slide":7,"bbox":[940,297.5,75,102.5]}
+{"kind":"textbox","id":"sh/5cfidsnu","slide":7,"name":"arch-reuse-label","text":"UNCHANGED + COMPATIBLE","textPreview":"UNCHANGED + COMPATIBLE","textChars":22,"textLines":1,"bbox":[755,138,195,22]}
+{"kind":"textbox","id":"sh/4b6hknm9","slide":7,"name":"arch-embed-label","text":"ADDED / MODIFIED / STALE","textPreview":"ADDED / MODIFIED / STALE","textChars":24,"textLines":1,"bbox":[745,455,210,22]}
+{"kind":"textbox","id":"sh/ofe1gru5","slide":7,"name":"arch-vector","text":"Synchronize\nChromaDB","textPreview":"Synchronize | ChromaDB","textChars":20,"textLines":2,"bbox":[1015,500,170,75]}
+{"kind":"shape","id":"sh/pgni9wbq","slide":7,"bbox":[1100,345,0,155]}
+{"kind":"textbox","id":"sh/2twje1cf","slide":7,"name":"arch-caption","text":"The commit manifest is canonical; ChromaDB is the searchable materialized state.","textPreview":"The commit manifest is canonical; ChromaDB is the searchable materialized state.","textChars":80,"textLines":1,"bbox":[90,590,1080,38]}
+{"kind":"notes","id":"nt/hzy0vl","slide":7,"text":"[Sources]\n- Local project source: README.md, Architecture and Core components\n- Local project source: PBL Documents/PBL_Synopsis_Git_for_Embeddingsv1.docx, Proposed system\n[/Sources]"}
+{"kind":"slide","id":"sl/xb0fs3","slide":8,"title":"INCREMENTAL WORKFLOW","textShapes":12}
+{"kind":"textbox","id":"sh/gj21oz2t","slide":8,"name":"eyebrow-8","text":"INCREMENTAL WORKFLOW","textPreview":"INCREMENTAL WORKFLOW","textChars":20,"textLines":1,"bbox":[48,28,700,28]}
+{"kind":"textbox","id":"sh/fyt0vul8","slide":8,"name":"title-8","text":"Every commit follows one conservative decision path","textPreview":"Every commit follows one conservative decision path","textChars":51,"textLines":1,"bbox":[48,58,1170,72]}
+{"kind":"shape","id":"sh/exkjmpk3","slide":8,"name":"footer-line-8","bbox":[48,674,1138,1]}
+{"kind":"textbox","id":"sh/twrit43i","slide":8,"name":"footer-label-8","text":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textPreview":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textChars":35,"textLines":1,"bbox":[48,682,420,18]}
+{"kind":"textbox","id":"sh/svi1kzmx","slide":8,"name":"footer-number-8","text":"8","textPreview":"8","textChars":1,"textLines":1,"bbox":[1150,680,72,20]}
+{"kind":"textbox","id":"sh/ru90rulc","slide":8,"name":"flow-scan","text":"Scan + hash\nworking state","textPreview":"Scan + hash | working state","textChars":25,"textLines":2,"bbox":[55,260,175,90]}
+{"kind":"textbox","id":"sh/6t0zip4r","slide":8,"name":"flow-compare","text":"Compare with\nHEAD","textPreview":"Compare with | HEAD","textChars":17,"textLines":2,"bbox":[285,260,165,90]}
+{"kind":"textbox","id":"sh/dsv25o3m","slide":8,"name":"flow-unchanged","text":"Unchanged\nReuse","textPreview":"Unchanged | Reuse","textChars":15,"textLines":2,"bbox":[525,150,160,80]}
+{"kind":"textbox","id":"sh/crm1wj21","slide":8,"name":"flow-changed","text":"Changed / stale\nRegenerate","textPreview":"Changed / stale | Regenerate","textChars":26,"textLines":2,"bbox":[525,285,160,80]}
+{"kind":"textbox","id":"sh/6d4rm9cz","slide":8,"name":"flow-deleted","text":"Deleted\nRemove ref","textPreview":"Deleted | Remove ref","textChars":18,"textLines":2,"bbox":[525,420,160,80]}
+{"kind":"textbox","id":"sh/7ex8fedk","slide":8,"name":"flow-commit","text":"Build immutable\ncommit","textPreview":"Build immutable | commit","textChars":22,"textLines":2,"bbox":[770,260,180,90]}
+{"kind":"textbox","id":"sh/sf69oju5","slide":8,"name":"flow-sync","text":"Advance ref +\nsync vector store","textPreview":"Advance ref + | sync vector store","textChars":31,"textLines":2,"bbox":[1030,260,180,90]}
+{"kind":"shape","id":"sh/tgfah4va","slide":8,"bbox":[230,305,55,0]}
+{"kind":"shape","id":"sh/ip4ripcn","slide":8,"bbox":[450,190,75,115]}
+{"kind":"shape","id":"sh/jqd8bud8","slide":8,"bbox":[450,305,75,20]}
+{"kind":"shape","id":"sh/krm9kzut","slide":8,"bbox":[450,305,75,155]}
+{"kind":"shape","id":"sh/5cvqd4ve","slide":8,"bbox":[685,190,85,115]}
+{"kind":"shape","id":"sh/2lorutc7","slide":8,"bbox":[685,305,85,20]}
+{"kind":"shape","id":"sh/3mhsnyts","slide":8,"bbox":[685,305,85,155]}
+{"kind":"shape","id":"sh/zq9ofqt4","slide":8,"bbox":[950,305,80,0]}
+{"kind":"textbox","id":"sh/yp0nmlsj","slide":8,"name":"flow-bottom","text":"Result: one new snapshot, zero unnecessary duplicate vectors.","textPreview":"Result: one new snapshot, zero unnecessary duplicate vectors.","textChars":61,"textLines":1,"bbox":[170,560,940,52]}
+{"kind":"notes","id":"nt/xb0fs3","slide":8,"text":"[Sources]\n- Local project source: README.md, Workflow\n- Local project source: Git for Embeddings Project.pdf, proposed workflow and change detection strategy\n[/Sources]"}
+{"kind":"slide","id":"sl/7omgbq","slide":9,"title":"CORRECTNESS BOUNDARY","textShapes":6}
+{"kind":"textbox","id":"sh/vq50zm14","slide":9,"name":"eyebrow-9","text":"CORRECTNESS BOUNDARY","textPreview":"CORRECTNESS BOUNDARY","textChars":20,"textLines":1,"bbox":[48,28,700,28]}
+{"kind":"textbox","id":"sh/wrehsr2p","slide":9,"name":"title-9","text":"Reuse requires the same chunk and the same effective configuration","textPreview":"Reuse requires the same chunk and the same effective configuration","textChars":66,"textLines":1,"bbox":[48,58,1170,72]}
+{"kind":"shape","id":"sh/hsni1wja","slide":9,"name":"footer-line-9","bbox":[48,674,1138,1]}
+{"kind":"textbox","id":"sh/m1czmhkn","slide":9,"name":"footer-label-9","text":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textPreview":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textChars":35,"textLines":1,"bbox":[48,682,420,18]}
+{"kind":"textbox","id":"sh/7mlgvm18","slide":9,"name":"footer-number-9","text":"9","textPreview":"9","textChars":1,"textLines":1,"bbox":[1150,680,72,20]}
+{"kind":"textbox","id":"sh/8nuhor2t","slide":9,"name":"rules-formula","text":"reusable = same chunk hash  AND  same embedding-config hash  AND  valid object","textPreview":"reusable = same chunk hash  AND  same embedding-config hash  AND  valid object","textChars":78,"textLines":1,"bbox":[90,132,1100,40]}
+{"kind":"textbox","id":"sh/6xgzyl0r","slide":9,"name":"rules-warning","text":"Equal dimensions do not make two embedding spaces compatible.","textPreview":"Equal dimensions do not make two embedding spaces compatible.","textChars":61,"textLines":1,"bbox":[130,585,1020,40]}
+{"kind":"table","id":"tb/kjq9czql","slide":9,"name":"reuse-table","rows":6,"cols":3,"preview":"Condition | Class | Required action","bbox":[70,205,1140,350]}
+{"kind":"notes","id":"nt/7omgbq","slide":9,"text":"[Sources]\n- Local project source: README.md, Versioning and invalidation rules\n- Local project source: Git for Embeddings Project.pdf, Important research boundary\n[/Sources]"}
+{"kind":"slide","id":"sl/tmbogu","slide":10,"title":"GIT-INSPIRED CONCEPTS","textShapes":13}
+{"kind":"textbox","id":"sh/mt436hkz","slide":10,"name":"eyebrow-10","text":"GIT-INSPIRED CONCEPTS","textPreview":"GIT-INSPIRED CONCEPTS","textChars":21,"textLines":1,"bbox":[48,28,700,28]}
+{"kind":"textbox","id":"sh/9wvm1wja","slide":10,"name":"title-10","text":"Git provides the mental model - embeddings require new semantics","textPreview":"Git provides the mental model - embeddings require new semantics","textChars":64,"textLines":1,"bbox":[48,58,1170,72]}
+{"kind":"shape","id":"sh/8vml8r25","slide":10,"name":"footer-line-10","bbox":[48,674,1138,1]}
+{"kind":"textbox","id":"sh/zqt4vm18","slide":10,"name":"footer-label-10","text":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textPreview":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textChars":35,"textLines":1,"bbox":[48,682,420,18]}
+{"kind":"textbox","id":"sh/ypk32hkn","slide":10,"name":"footer-number-10","text":"10","textPreview":"10","textChars":2,"textLines":1,"bbox":[1150,680,72,20]}
+{"kind":"textbox","id":"sh/lsvmxcje","slide":10,"name":"git-term-0","text":"Repository","textPreview":"Repository","textChars":10,"textLines":1,"bbox":[70,165,225,55]}
+{"kind":"shape","id":"sh/0rml472t","slide":10,"name":"git-line-0","bbox":[310,170,2,70]}
+{"kind":"textbox","id":"sh/b2t4r21c","slide":10,"name":"git-desc-0","text":"Documents, configuration, objects, refs, and history","textPreview":"Documents, configuration, objects, refs, and history","textChars":52,"textLines":1,"bbox":[350,165,780,70]}
+{"kind":"textbox","id":"sh/q1k3yxkr","slide":10,"name":"git-term-1","text":"Object","textPreview":"Object","textChars":6,"textLines":1,"bbox":[70,273,225,55]}
+{"kind":"shape","id":"sh/wze5w3a5","slide":10,"name":"git-line-1","bbox":[310,278,2,70]}
+{"kind":"textbox","id":"sh/hknmp8rq","slide":10,"name":"git-desc-1","text":"Immutable chunk or embedding stored by content hash","textPreview":"Immutable chunk or embedding stored by content hash","textChars":51,"textLines":1,"bbox":[350,273,780,70]}
+{"kind":"textbox","id":"sh/uxwnutsz","slide":10,"name":"git-term-2","text":"Commit","textPreview":"Commit","textChars":6,"textLines":1,"bbox":[70,381,225,55]}
+{"kind":"shape","id":"sh/vy54ny9k","slide":10,"name":"git-line-2","bbox":[310,386,2,70]}
+{"kind":"textbox","id":"sh/8vulsja9","slide":10,"name":"git-desc-2","text":"Manifest linking exact chunks, vectors, config, and parent","textPreview":"Manifest linking exact chunks, vectors, config, and parent","textChars":58,"textLines":1,"bbox":[350,381,780,70]}
+{"kind":"textbox","id":"sh/9w3mlobe","slide":10,"name":"git-term-3","text":"Branch","textPreview":"Branch","textChars":6,"textLines":1,"bbox":[70,489,225,55]}
+{"kind":"shape","id":"sh/mtc3qts3","slide":10,"name":"git-line-3","bbox":[310,494,2,70]}
+{"kind":"textbox","id":"sh/7ul4jyto","slide":10,"name":"git-desc-3","text":"Isolated model, chunking, or retrieval experiment","textPreview":"Isolated model, chunking, or retrieval experiment","textChars":49,"textLines":1,"bbox":[350,489,780,70]}
+{"kind":"textbox","id":"sh/sry54nad","slide":10,"name":"git-boundary","text":"Git still versions the source code. This system versions large embedding artifacts and their provenance.","textPreview":"Git still versions the source code. This system versions large embedding artifacts and their provenance.","textChars":104,"textLines":1,"bbox":[90,600,1100,45]}
+{"kind":"notes","id":"nt/tmbogu","slide":10,"text":"[Sources]\n- Local project source: README.md, Git-to-embedding mapping\n- Local project source: Git for Embeddings Project.pdf, Git-inspired concepts\n[/Sources]"}
+{"kind":"slide","id":"sl/c73vg1","slide":11,"title":"SCOPE AND TECHNOLOGY","textShapes":11}
+{"kind":"textbox","id":"sh/ju5gjmp4","slide":11,"name":"eyebrow-11","text":"SCOPE AND TECHNOLOGY","textPreview":"SCOPE AND TECHNOLOGY","textChars":20,"textLines":1,"bbox":[48,28,700,28]}
+{"kind":"textbox","id":"sh/kvexsr6p","slide":11,"name":"title-11","text":"The semester MVP is deliberately local, testable, and extensible","textPreview":"The semester MVP is deliberately local, testable, and extensible","textChars":64,"textLines":1,"bbox":[48,58,1170,72]}
+{"kind":"shape","id":"sh/lw7ylw7a","slide":11,"name":"footer-line-11","bbox":[48,674,1138,1]}
+{"kind":"textbox","id":"sh/a5wfmhon","slide":11,"name":"footer-label-11","text":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textPreview":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textChars":35,"textLines":1,"bbox":[48,682,420,18]}
+{"kind":"textbox","id":"sh/b65gf2p8","slide":11,"name":"footer-number-11","text":"11","textPreview":"11","textChars":2,"textLines":1,"bbox":[1150,680,72,20]}
+{"kind":"shape","id":"sh/w7exo76t","slide":11,"name":"mvp-accent-0","bbox":[48,175,350,6]}
+{"kind":"textbox","id":"sh/x8nyhc7y","slide":11,"name":"mvp-title-0","text":"Pipeline","textPreview":"Pipeline","textChars":8,"textLines":1,"bbox":[48,215,350,50]}
+{"kind":"textbox","id":"sh/u1gzy1or","slide":11,"name":"mvp-body-0","text":"TXT / Markdown / PDF\nDeterministic chunking\nSentence Transformers","textPreview":"TXT / Markdown / PDF | Deterministic chunking | Sentence Transformers","textChars":65,"textLines":3,"bbox":[48,300,350,210]}
+{"kind":"shape","id":"sh/f2pgr6pc","slide":11,"name":"mvp-accent-1","bbox":[453,175,350,6]}
+{"kind":"textbox","id":"sh/za9wzuts","slide":11,"name":"mvp-title-1","text":"Versioning core","textPreview":"Versioning core","textChars":15,"textLines":1,"bbox":[453,215,350,50]}
+{"kind":"textbox","id":"sh/y90f6pc7","slide":11,"name":"mvp-body-1","text":"SHA-256 hashes\nImmutable objects + commits\nDiff, log, checkout","textPreview":"SHA-256 hashes | Immutable objects + commits | Diff, log, checkout","textChars":62,"textLines":3,"bbox":[453,300,350,210]}
+{"kind":"shape","id":"sh/lcbe14by","slide":11,"name":"mvp-accent-2","bbox":[858,175,350,6]}
+{"kind":"textbox","id":"sh/kb2x8zud","slide":11,"name":"mvp-title-2","text":"Serving + evaluation","textPreview":"Serving + evaluation","textChars":20,"textLines":1,"bbox":[858,215,350,50]}
+{"kind":"textbox","id":"sh/7etw3et4","slide":11,"name":"mvp-body-2","text":"ChromaDB adapter\nTyper CLI\nPytest + benchmarks","textPreview":"ChromaDB adapter | Typer CLI | Pytest + benchmarks","textChars":46,"textLines":3,"bbox":[858,300,350,210]}
+{"kind":"textbox","id":"sh/mdkfa9cj","slide":11,"name":"mvp-out","text":"Out of scope: distributed collaboration, authentication, GPU clusters, and guaranteed cross-model alignment.","textPreview":"Out of scope: distributed collaboration, authentication, GPU clusters, and guaranteed cross-model alignment.","textChars":108,"textLines":1,"bbox":[95,575,1090,52]}
+{"kind":"notes","id":"nt/c73vg1","slide":11,"text":"[Sources]\n- Local project source: README.md, Objectives and scope / Technology stack\n- Local project source: PBL Documents/PBL_Synopsis_Git_for_Embeddingsv1.docx, Scope and System requirements\n[/Sources]"}
+{"kind":"slide","id":"sl/d9kfzs","slide":12,"title":"EXPERIMENTAL METHODOLOGY","textShapes":15}
+{"kind":"textbox","id":"sh/hcrmds3q","slide":12,"name":"eyebrow-12","text":"EXPERIMENTAL METHODOLOGY","textPreview":"EXPERIMENTAL METHODOLOGY","textChars":24,"textLines":1,"bbox":[48,28,700,28]}
+{"kind":"textbox","id":"sh/u9g3ixkz","slide":12,"name":"title-12","text":"We compare against two practical regeneration baselines","textPreview":"We compare against two practical regeneration baselines","textChars":55,"textLines":1,"bbox":[48,58,1170,72]}
+{"kind":"shape","id":"sh/vap4b2lk","slide":12,"name":"footer-line-12","bbox":[48,674,1138,1]}
+{"kind":"textbox","id":"sh/4zilo721","slide":12,"name":"footer-label-12","text":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textPreview":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textChars":35,"textLines":1,"bbox":[48,682,420,18]}
+{"kind":"textbox","id":"sh/50rmhc3m","slide":12,"name":"footer-number-12","text":"12","textPreview":"12","textChars":2,"textLines":1,"bbox":[1150,680,72,20]}
+{"kind":"textbox","id":"sh/ix03mxkb","slide":12,"name":"exp-question","text":"Can chunk-level regeneration reduce update cost while preserving retrieval quality and reproducibility?","textPreview":"Can chunk-level regeneration reduce update cost while preserving retrieval quality and reproducibility?","textChars":103,"textLines":1,"bbox":[75,135,1130,65]}
+{"kind":"shape","id":"sh/3y94f2lg","slide":12,"name":"exp-panel-0","bbox":[48,250,365,245]}
+{"kind":"textbox","id":"sh/k3elcn2x","slide":12,"name":"exp-tag-0","text":"BASELINE 1","textPreview":"BASELINE 1","textChars":10,"textLines":1,"bbox":[76,280,300,26]}
+{"kind":"textbox","id":"sh/l472583i","slide":12,"name":"exp-title-0","text":"Full regeneration","textPreview":"Full regeneration","textChars":17,"textLines":1,"bbox":[76,330,305,55]}
+{"kind":"textbox","id":"sh/1kbqhkne","slide":12,"name":"exp-body-0","text":"Embed every chunk again","textPreview":"Embed every chunk again","textChars":23,"textLines":1,"bbox":[76,410,305,55]}
+{"kind":"shape","id":"sh/gz2p8f6t","slide":12,"name":"exp-panel-1","bbox":[453,250,365,245]}
+{"kind":"textbox","id":"sh/fytofa58","slide":12,"name":"exp-tag-1","text":"BASELINE 2","textPreview":"BASELINE 2","textChars":10,"textLines":1,"bbox":[481,280,300,26]}
+{"kind":"textbox","id":"sh/exk765on","slide":12,"name":"exp-title-1","text":"Document-level","textPreview":"Document-level","textChars":14,"textLines":1,"bbox":[481,330,305,55]}
+{"kind":"textbox","id":"sh/povql4na","slide":12,"name":"exp-body-1","text":"Re-embed every changed document","textPreview":"Re-embed every changed document","textChars":31,"textLines":1,"bbox":[481,410,305,55]}
+{"kind":"shape","id":"sh/onmpcz65","slide":12,"name":"exp-panel-2","bbox":[858,250,365,245]}
+{"kind":"textbox","id":"sh/3md8ju5k","slide":12,"name":"exp-tag-2","text":"PROPOSED","textPreview":"PROPOSED","textChars":8,"textLines":1,"bbox":[886,280,300,26]}
+{"kind":"textbox","id":"sh/2l47apoz","slide":12,"name":"exp-title-2","text":"Chunk-level","textPreview":"Chunk-level","textChars":11,"textLines":1,"bbox":[886,330,305,55]}
+{"kind":"textbox","id":"sh/dsvqp4nm","slide":12,"name":"exp-body-2","text":"Embed only added, modified, or stale chunks","textPreview":"Embed only added, modified, or stale chunks","textChars":43,"textLines":1,"bbox":[886,410,305,55]}
+{"kind":"textbox","id":"sh/crmpgz61","slide":12,"name":"exp-changes","text":"Controlled changes: modify 1% / 5% / 10%, add, delete, metadata-only, chunking change, model change","textPreview":"Controlled changes: modify 1% / 5% / 10%, add, delete, metadata-only, chunking change, model change","textChars":99,"textLines":1,"bbox":[95,560,1090,55]}
+{"kind":"notes","id":"nt/d9kfzs","slide":12,"text":"[Sources]\n- Local project source: README.md, Experimental methodology\n- Local project source: Git for Embeddings Project.pdf, Experimental evaluation\n[/Sources]"}
+{"kind":"slide","id":"sl/43bhh6","slide":13,"title":"EVALUATION AND EXPECTED OUTCOME","textShapes":11}
+{"kind":"textbox","id":"sh/9kvud4f6","slide":13,"name":"eyebrow-13","text":"EVALUATION AND EXPECTED OUTCOME","textPreview":"EVALUATION AND EXPECTED OUTCOME","textChars":31,"textLines":1,"bbox":[48,28,700,28]}
+{"kind":"textbox","id":"sh/mh4b2pwf","slide":13,"name":"title-13","text":"Success requires efficiency gains without retrieval regressions","textPreview":"Success requires efficiency gains without retrieval regressions","textChars":63,"textLines":1,"bbox":[48,58,1170,72]}
+{"kind":"shape","id":"sh/7idcbux0","slide":13,"name":"footer-line-13","bbox":[48,674,1138,1]}
+{"kind":"textbox","id":"sh/0vmt0fep","slide":13,"name":"footer-label-13","text":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textPreview":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textChars":35,"textLines":1,"bbox":[48,682,420,18]}
+{"kind":"textbox","id":"sh/lgvu9kfu","slide":13,"name":"footer-number-13","text":"13","textPreview":"13","textChars":2,"textLines":1,"bbox":[1150,680,72,20]}
+{"kind":"textbox","id":"sh/ytkbypwj","slide":13,"name":"metric-title-0","text":"Efficiency","textPreview":"Efficiency","textChars":10,"textLines":1,"bbox":[50,175,350,55]}
+{"kind":"shape","id":"sh/zudc7ax4","slide":13,"name":"metric-rule-0","bbox":[50,245,335,3]}
+{"kind":"textbox","id":"sh/cr2twfed","slide":13,"name":"metric-body-0","text":"Execution time\nModel calls\nVectors reused\nStorage overhead","textPreview":"Execution time | Model calls | Vectors reused | Storage overhead","textChars":58,"textLines":4,"bbox":[50,285,340,220]}
+{"kind":"textbox","id":"sh/dsbu5kfy","slide":13,"name":"metric-title-1","text":"Retrieval quality","textPreview":"Retrieval quality","textChars":17,"textLines":1,"bbox":[455,175,350,55]}
+{"kind":"shape","id":"sh/toja543y","slide":13,"name":"metric-rule-1","bbox":[455,245,335,3]}
+{"kind":"textbox","id":"sh/snatcz2d","slide":13,"name":"metric-body-1","text":"Recall@K\nMRR\nNDCG@K\nTop-k overlap","textPreview":"Recall@K | MRR | NDCG@K | Top-k overlap","textChars":33,"textLines":4,"bbox":[455,285,340,220]}
+{"kind":"textbox","id":"sh/7m1s3uls","slide":13,"name":"metric-title-2","text":"Reproducibility","textPreview":"Reproducibility","textChars":15,"textLines":1,"bbox":[860,175,350,55]}
+{"kind":"shape","id":"sh/6lsbapk7","slide":13,"name":"metric-rule-2","bbox":[860,245,335,3]}
+{"kind":"textbox","id":"sh/5kja1k32","slide":13,"name":"metric-body-2","text":"Same chunks\nSame metadata + config\nSame store membership\nSimilar vectors","textPreview":"Same chunks | Same metadata + config | Same store membership | Similar vectors","textChars":72,"textLines":4,"bbox":[860,285,340,220]}
+{"kind":"shape","id":"sh/kjat8f2h","slide":13,"name":"hypothesis-band","bbox":[50,535,1160,90]}
+{"kind":"textbox","id":"sh/jihszalw","slide":13,"name":"hypothesis-text","text":"Hypothesis: savings are largest when only a small fraction changes; incompatible configuration changes correctly force broad regeneration.","textPreview":"Hypothesis: savings are largest when only a small fraction changes; incompatible configuration changes correctly force broad regeneration.","textChars":138,"textLines":1,"bbox":[90,555,1080,50]}
+{"kind":"notes","id":"nt/43bhh6","slide":13,"text":"[Sources]\n- Local project source: README.md, Evaluation metrics and Expected results\n- Local project source: Git for Embeddings Project.pdf, Evaluation metrics\n[/Sources]"}
+{"kind":"slide","id":"sl/2kqwrc","slide":14,"title":"SEMESTER ROADMAP AND CURRENT STATUS","textShapes":15}
+{"kind":"textbox","id":"sh/6l4fidgn","slide":14,"name":"eyebrow-14","text":"SEMESTER ROADMAP AND CURRENT STATUS","textPreview":"SEMESTER ROADMAP AND CURRENT STATUS","textChars":35,"textLines":1,"bbox":[48,28,700,28]}
+{"kind":"textbox","id":"sh/toved8fe","slide":14,"name":"title-14","text":"The project advances from deterministic foundations to measurable evaluation","textPreview":"The project advances from deterministic foundations to measurable evaluation","textChars":76,"textLines":1,"bbox":[48,58,1170,72]}
+{"kind":"shape","id":"sh/snmxk3yt","slide":14,"name":"footer-line-14","bbox":[48,674,1138,1]}
+{"kind":"textbox","id":"sh/jytw7yxc","slide":14,"name":"footer-label-14","text":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textPreview":"GIT FOR EMBEDDINGS  |  SEMESTER PBL","textChars":35,"textLines":1,"bbox":[48,682,420,18]}
+{"kind":"textbox","id":"sh/yxkfetgr","slide":14,"name":"footer-number-14","text":"14","textPreview":"14","textChars":2,"textLines":1,"bbox":[1150,680,72,20]}
+{"kind":"shape","id":"sh/lkbe98f2","slide":14,"name":"road-line","bbox":[150,395,980,3]}
+{"kind":"shape","id":"sh/kz2xg3yh","slide":14,"name":"road-card-0","bbox":[120,170,330,185]}
+{"kind":"textbox","id":"sh/3uxgjixg","slide":14,"name":"road-num-0","text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[145,195,55,50]}
+{"kind":"textbox","id":"sh/2tofqxgv","slide":14,"name":"road-title-0","text":"Foundation","textPreview":"Foundation","textChars":10,"textLines":1,"bbox":[145,255,280,40]}
+{"kind":"textbox","id":"sh/on65cvq1","slide":14,"name":"road-body-0","text":"Schemas, loaders, chunking, hashing","textPreview":"Schemas, loaders, chunking, hashing","textChars":35,"textLines":1,"bbox":[145,305,280,45]}
+{"kind":"shape","id":"sh/pof6l0r6","slide":14,"name":"road-dot-0","bbox":[270,386,20,20]}
+{"kind":"shape","id":"sh/2lona58v","slide":14,"name":"road-card-1","bbox":[525,170,330,185]}
+{"kind":"textbox","id":"sh/3mxoja9g","slide":14,"name":"road-num-1","text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[550,195,55,50]}
+{"kind":"textbox","id":"sh/gjm58vqp","slide":14,"name":"road-title-1","text":"Versioning core","textPreview":"Versioning core","textChars":15,"textLines":1,"bbox":[550,255,280,40]}
+{"kind":"textbox","id":"sh/1kf6h0ra","slide":14,"name":"road-body-1","text":"Objects, commits, status, incremental embed","textPreview":"Objects, commits, status, incremental embed","textChars":43,"textLines":1,"bbox":[550,305,280,45]}
+{"kind":"shape","id":"sh/eh4n6l8j","slide":14,"name":"road-dot-1","bbox":[675,386,20,20]}
+{"kind":"shape","id":"sh/fidofq94","slide":14,"name":"road-card-2","bbox":[930,170,330,185]}
+{"kind":"textbox","id":"sh/svm54bqt","slide":14,"name":"road-num-2","text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[955,195,55,50]}
+{"kind":"textbox","id":"sh/twv6dgre","slide":14,"name":"road-title-2","text":"Validation","textPreview":"Validation","textChars":10,"textLines":1,"bbox":[955,255,280,40]}
+{"kind":"textbox","id":"sh/tcnmhcj2","slide":14,"name":"road-body-2","text":"Diff, restore, ChromaDB sync, benchmarks","textPreview":"Diff, restore, ChromaDB sync, benchmarks","textChars":40,"textLines":1,"bbox":[955,305,280,45]}
+{"kind":"shape","id":"sh/8bel872h","slide":14,"name":"road-dot-2","bbox":[1080,386,20,20]}
+{"kind":"textbox","id":"sh/7a54f21w","slide":14,"name":"status-title","text":"Current repository status","textPreview":"Current repository status","textChars":25,"textLines":1,"bbox":[170,485,360,42]}
+{"kind":"textbox","id":"sh/6pw36xkb","slide":14,"name":"status-body","text":"Specification, synopsis, README, and team primer complete. Implementation and benchmark results remain to be built and verified.","textPreview":"Specification, synopsis, README, and team primer complete. Implementation and benchmark results remain to be built and verified.","textChars":128,"textLines":1,"bbox":[170,540,890,75]}
+{"kind":"notes","id":"nt/2kqwrc","slide":14,"text":"[Sources]\n- Local project source: README.md, Semester roadmap and Project status\n- Local folder inspection on 2026-08-08: documentation files present; no source implementation tree found\n[/Sources]"}
+{"kind":"slide","id":"sl/vhdhmo","slide":15,"title":"PROPOSED CONTRIBUTION","textShapes":5}
+{"kind":"textbox","id":"sh/8bi9cri5","slide":15,"name":"close-kicker","text":"PROPOSED CONTRIBUTION","textPreview":"PROPOSED CONTRIBUTION","textChars":21,"textLines":1,"bbox":[55,46,320,28]}
+{"kind":"textbox","id":"sh/na98j61k","slide":15,"name":"close-title","text":"A version-control layer for the embedding lifecycle","textPreview":"A version-control layer for the embedding lifecycle","textChars":51,"textLines":1,"bbox":[55,135,1000,140]}
+{"kind":"textbox","id":"sh/m907a10f","slide":15,"name":"close-body","text":"Content-addressable storage + chunk-level change detection + configuration-aware invalidation + reproducible snapshots + vector-store synchronization","textPreview":"Content-addressable storage + chunk-level change detection + configuration-aware invalidation + reproducible snapshots + vector-store syn...","textChars":149,"textLines":1,"bbox":[60,320,1080,110]}
+{"kind":"shape","id":"sh/h0bqpgj2","slide":15,"name":"close-rule","bbox":[60,480,1100,2]}
+{"kind":"textbox","id":"sh/wz29gbih","slide":15,"name":"close-boundary","text":"Not a new embedding model. Not a replacement for Git. A practical system for managing derived vector artifacts safely and efficiently.","textPreview":"Not a new embedding model. Not a replacement for Git. A practical system for managing derived vector artifacts safely and efficiently.","textChars":134,"textLines":1,"bbox":[60,525,1100,75]}
+{"kind":"textbox","id":"sh/vy98n61w","slide":15,"name":"close-questions","text":"Questions & discussion","textPreview":"Questions & discussion","textChars":22,"textLines":1,"bbox":[60,650,400,28]}
+{"kind":"notes","id":"nt/vhdhmo","slide":15,"text":"[Sources]\n- Local project source: README.md, Research contribution and Limitations\n- Local project source: PBL Documents/PBL_Synopsis_Git_for_Embeddingsv1.docx, Expected outcome\n[/Sources]"}
