@@ -540,3 +540,50 @@ Avoid committing source datasets, generated model caches, `.embedgit/objects/`, 
 ---
 
 **EmbedGit manages embedding artifacts; Git continues to manage the code that creates them.**
+
+
+```mermaid
+flowchart TD
+    A["Source Documents<br/>PDF • Markdown • Text"]
+    B["Load, Normalize & Chunk"]
+    C["Hash Chunks and Detect Changes"]
+    D{"Chunk Status"}
+
+    E["Reuse Existing Embedding"]
+    F["Generate New Embedding"]
+
+    G[("Immutable Object Store")]
+    H["Create Versioned Commit<br/>History • Diff • Restore"]
+    I["Synchronize Vector Database"]
+    J[("ChromaDB")]
+    K["Semantic Search / RAG"]
+
+    A --> B --> C --> D
+
+    D -->|"Unchanged"| E
+    D -->|"Added / Modified / Stale"| F
+    D -->|"Deleted"| H
+
+    E --> G
+    F --> G
+    G --> H
+    H --> I --> J --> K
+
+    H -.->|"Restore earlier version"| I
+```
+
+
+```mermaid
+flowchart TD
+    A["Source Documents"] --> B["Process & Chunk"]
+    B --> C{"Chunk Status"}
+
+    C -->|"Unchanged"| D["Reuse Embedding"]
+    C -->|"Added / Modified / Stale"| E["Generate Embedding"]
+    C -->|"Deleted"| G["Versioned Commit"]
+
+    D --> F[("Immutable Object Store")]
+    E --> F
+    F --> G
+    G --> H[("ChromaDB")]
+```
