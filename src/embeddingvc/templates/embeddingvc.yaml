@@ -1,0 +1,28 @@
+repository:
+  name: $repository_name
+
+documents:
+  source_directory: ./data
+  supported_types: [txt, md, pdf, docx]
+
+preprocessing:
+  unicode_normalization: NFKC
+  remove_extra_whitespace: true
+  lowercase: false
+
+chunking:
+  strategy: recursive-character
+  chunk_size: 500
+  chunk_overlap: 50
+
+embedding:
+  model: BAAI/bge-small-en-v1.5
+  # Set an immutable model commit revision before generating embeddings.
+  revision: null
+  normalize_embeddings: true
+  batch_size: 32
+
+vector_store:
+  provider: chromadb
+  collection: student-notes
+  persist_directory: ./output/chroma
