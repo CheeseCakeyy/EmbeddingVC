@@ -38,6 +38,50 @@ python3 -m venv .venv
 .venv/bin/embeddingvc --help
 ```
 
+## Initialize an existing folder
+
+EmbeddingVC is installed inside this project's `.venv`, so a newly opened
+terminal may report that `embeddingvc` is not recognized until the environment
+is activated.
+
+For example, to initialize an existing folder named `New folder` using Windows
+Command Prompt:
+
+```cmd
+cd "C:\Users\Adwait Tagalpallewar\Desktop\New folder"
+"C:\Users\Adwait Tagalpallewar\Desktop\embeddingVC\.venv\Scripts\embeddingvc.exe" init
+```
+
+This uses the full executable path and does not require activation. Alternatively,
+activate the environment once in the current Command Prompt window:
+
+```cmd
+"C:\Users\Adwait Tagalpallewar\Desktop\embeddingVC\.venv\Scripts\activate.bat"
+cd "C:\Users\Adwait Tagalpallewar\Desktop\New folder"
+embeddingvc init
+```
+
+For PowerShell, activate it with:
+
+```powershell
+& "C:\Users\Adwait Tagalpallewar\Desktop\embeddingVC\.venv\Scripts\Activate.ps1"
+Set-Location "C:\Users\Adwait Tagalpallewar\Desktop\New folder"
+embeddingvc init
+```
+
+Activation applies only to the current terminal session. In a new terminal,
+activate the environment again or use the full path to `embeddingvc.exe`.
+
+You can also remain in any directory and pass the destination explicitly:
+
+```cmd
+"C:\Users\Adwait Tagalpallewar\Desktop\embeddingVC\.venv\Scripts\embeddingvc.exe" init "C:\Users\Adwait Tagalpallewar\Desktop\New folder"
+```
+
+Initialization keeps existing documents and unrelated files. If the destination
+already has `README.md` or `embeddingvc.yaml`, the command stops unless `--force`
+is supplied. An existing `.embeddingvc` directory always prevents reinitialization.
+
 ## Try the init command safely
 
 Create a disposable project outside the source repository. From the
