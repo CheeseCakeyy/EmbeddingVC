@@ -8,6 +8,14 @@ version = "0.1.0"
 description = "Git-inspired version control for embedding collections"
 readme = "README.md"
 requires-python = ">=3.11"
+dependencies = [
+    # Reads embeddingvc.yaml.
+    "PyYAML>=6.0,<7",
+    # Extracts PDF text. Pinned to one major line: an extraction change
+    # alters staged chunks, so the installed version is recorded in the
+    # staging snapshot and a bump re-chunks every tracked PDF.
+    "PyMuPDF>=1.24,<2",
+]
 
 [project.scripts]
 embeddingvc = "embeddingvc.cli:app"
