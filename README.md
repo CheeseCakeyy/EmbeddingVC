@@ -125,6 +125,20 @@ The config leaves the model revision unset; pin an immutable model commit before
 embedding generation. `status`, `embed`, `commit`, `log`, and `checkout` are future
 milestones. No models or database packages are installed by init.
 
+## Create and list branches
+
+After the first commit, list local branches or create an experiment branch from
+the current or an explicit commit:
+
+```text
+embeddingvc branch
+embeddingvc branch minilm-experiment
+embeddingvc branch minilm-experiment <start-commit>
+```
+
+Branch creation only writes `.embeddingvc/refs/heads/<name>` and prints the
+checkout command. It does not switch `HEAD`, copy vectors, or modify Chroma.
+
 Handled filesystem failures restore overwritten files and remove newly created
 files and empty directories. This is not crash recovery; do not run simultaneous
 initializers or edit managed files during initialization.
