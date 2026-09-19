@@ -4,6 +4,7 @@ import argparse
 from pathlib import Path
 
 from . import __version__
+from .commands.branch import BranchError, branch
 from .repository import InitializationError, initialize
 
 
@@ -14,10 +15,16 @@ def app(argv: list[str] | None = None) -> None:
     init = commands.add_parser("init", help="Initialize an embedding repository")
     init.add_argument("directory", nargs="?", type=Path, default=Path("."))
     init.add_argument("--force", action="store_true", help="Replace existing README and config; never reset history")
+    branch_parser = commands.add_parser("branch", help="List or create local branches")
+    branch_parser.add_argument("name", nargs="?", help="New branch name")
+    branch_parser.add_argument("start", nargs="?", help="Existing commit or unique commit prefix")
     args = parser.parse_args(argv)
     try:
+        if args.command == "branch":
+            print(branch(name=args.name, start=args.start))
+            return
         root = initialize(args.directory, force=args.force)
-    except (InitializationError, OSError) as exc:
+    except (InitializationError, BranchError, OSError) as exc:
         parser.exit(1, f"Error: {exc}\n")
     print(f"EmbeddingVC repository initialized at {root}.\n")
     print("Next steps:\n1. Add documents to data/\n2. Review embeddingvc.yaml")
