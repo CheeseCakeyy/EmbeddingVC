@@ -61,6 +61,7 @@ def initialize(directory: Path | str = ".", *, force: bool = False) -> Path:
         "README.md": templates.joinpath("README.md").read_bytes(),
         ".embeddingvc/HEAD": b"ref: refs/heads/main\n",
         ".embeddingvc/refs/heads/main": b"",
+        ".embeddingvc/config.json": (json.dumps({"repository": {"name": root.name}}, ensure_ascii=True) + "\n").encode(),
         ".embeddingvc/index.json": b'{"version": 1, "documents": {}}\n',
     }
     if missing:
