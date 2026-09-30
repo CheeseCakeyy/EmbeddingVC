@@ -4,6 +4,7 @@ import argparse
 from pathlib import Path
 
 from . import __version__
+from .commands.add import AddError, add
 from .commands.branch import BranchError, branch
 from .commands.config import get as config_get
 from .commands.config import set_ as config_set
@@ -30,8 +31,13 @@ def app(argv: list[str] | None = None) -> None:
     config_set_parser = config_commands.add_parser("set", help="Validate and update a configuration value")
     config_set_parser.add_argument("key")
     config_set_parser.add_argument("value")
+    add_parser = commands.add_parser("add", help="Track documents and stage deterministic chunks")
+    add_parser.add_argument("paths", nargs="+", help="Files or directories inside the repository")
     args = parser.parse_args(argv)
     try:
+        if args.command == "add":
+            print(add(args.paths).render())
+            return
         if args.command == "branch":
             print(branch(name=args.name, start=args.start))
             return
@@ -44,7 +50,7 @@ def app(argv: list[str] | None = None) -> None:
                 print(config_set(Path("."), args.key, args.value))
             return
         root = initialize(args.directory, force=args.force)
-    except (InitializationError, BranchError, ConfigurationError, OSError) as exc:
+    except (InitializationError, BranchError, ConfigurationError, AddError, OSError) as exc:
         parser.exit(1, f"Error: {exc}\n")
     print(f"EmbeddingVC repository initialized at {root}.\n")
     print("Next steps:\n1. Add documents to data/\n2. Review embeddingvc.yaml")
