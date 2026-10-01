@@ -16,26 +16,28 @@ occurrences are deleted/added. Equal content with an incompatible saved embeddin
 fingerprint is stale. Counts are occurrences; unique model inputs deduplicate
 the pending content hashes. File renames are additions and deletions.
 
-## Provisional contracts for future commit and embed commands
+## Storage contracts
 
-These commands are not implemented yet. Status tests use synthetic fixtures:
+Embed uses the contract in [embed.md](embed.md). Commit remains a future command;
+its status fixtures use the snapshot shape below:
 
 - `.embeddingvc/commits/<sha256>` is canonical-JSON-addressed snapshot data with
   `documents` and `config`, using the same document records as index version 2.
   The commit filename must equal `hash_payload(snapshot)`.
 - An occurrence's embedding reference is `{ "vector": "<sha256>",
-  "fingerprint": "<embedding fingerprint>" }`.
-- `.embeddingvc/objects/vectors/<sha256>.json` contains `chunk`, `fingerprint`,
-  and a nonempty `values` array of finite numbers. Its hash must match its name.
-  Status verifies both the reference fingerprint and the vector's fingerprint
-  against the current model, revision, and normalization settings.
+  "fingerprint": "<embedding fingerprint>", "embedding_config_hash": "<sha256>" }`.
+- `.embeddingvc/objects/embeddings/<sha256>.json` contains `chunk_hash`,
+  `embedding_config_hash`, `vector`, `dimension` and reproducibility provenance.
+  Status verifies its hash, vector dimension and finite values, full config
+  references, and effective model/pipeline configuration without loading a model.
+  Older synthetic `objects/vectors/` records remain readable for compatibility.
 - Chunk and config objects must exist and match their content-addressed names
   before associated vectors count as ready. A missing or corrupt reference
   requires regeneration; status never repairs it.
 - Optional `.embeddingvc/sync.json` contains a `status` of `pending`, `failed`,
   or `synced`. Absence means no synchronization state has been recorded.
 
-Finalize these contracts with the commit/embed implementations. Status fails
+Coordinate the commit contract with its implementation. Status fails
 clearly for an invalid HEAD snapshot rather than assuming an empty baseline.
 
 ## Tests

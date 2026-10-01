@@ -158,34 +158,21 @@ def _atomic_write(path: Path, payload: bytes) -> None:
 def write_chunk_object(root: Path, text: str) -> str:
     """Store one chunk's text and return its content hash.
 
-    Writing is skipped when the object already exists: objects are immutable,
-    so an existing file with this name already holds exactly this text.
+    Existing objects are verified before reuse; corruption is never overwritten.
     """
-    payload = {"schema": CHUNK_SCHEMA, "text": text, "characters": len(text)}
-    digest = hash_payload(payload)
-    path = object_path(root, "chunks", digest)
-    if not path.exists():
-        _atomic_write(path, canonical_json(payload))
-    return digest
+    from .object_store import write_object
+    return write_object(root, "chunks", {"schema": CHUNK_SCHEMA, "text": text, "characters": len(text)})
 
 
 def write_config_object(root: Path, snapshot: dict) -> str:
     """Store a staging snapshot and return its hash."""
-    digest = hash_payload(snapshot)
-    path = object_path(root, "configs", digest)
-    if not path.exists():
-        _atomic_write(path, canonical_json(snapshot))
-    return digest
+    from .object_store import write_object
+    return write_object(root, "configs", snapshot)
 
 
 def read_chunk_object(root: Path, digest: str) -> dict:
-    path = object_path(root, "chunks", digest)
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except FileNotFoundError as exc:
-        raise RepositoryError(f"Chunk object is missing: {path}") from exc
-    except json.JSONDecodeError as exc:
-        raise RepositoryError(f"Chunk object is corrupt: {path}: {exc}") from exc
+    from .object_store import read_object
+    return read_object(root, "chunks", digest)
 
 
 def publish_index(root: Path, index: dict) -> None:

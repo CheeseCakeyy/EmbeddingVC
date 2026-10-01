@@ -1,8 +1,10 @@
 """Repository initialization without model downloads or database dependencies."""
 
 import json
+import os
 from importlib.resources import files
 from pathlib import Path
+from contextlib import contextmanager
 from string import Template
 
 
@@ -105,3 +107,22 @@ def initialize(directory: Path | str = ".", *, force: bool = False) -> Path:
         detail = f" Rollback incomplete: {'; '.join(cleanup_errors)}" if cleanup_errors else " Changes rolled back."
         raise InitializationError(f"Initialization failed: {exc}.{detail}") from exc
     return root
+
+
+@contextmanager
+def repository_lock(root: Path):
+    """Serialize mutations of working configuration and the candidate index."""
+    from .object_store import reject_links
+    from .objects import RepositoryError
+
+    path = root / ".embeddingvc" / "lock"
+    reject_links(path, root)
+    try:
+        fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+    except FileExistsError as exc:
+        raise RepositoryError("Repository is locked by another operation (.embeddingvc/lock)") from exc
+    try:
+        os.close(fd)
+        yield
+    finally:
+        path.unlink(missing_ok=True)

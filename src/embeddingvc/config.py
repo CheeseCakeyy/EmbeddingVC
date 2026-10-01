@@ -89,7 +89,8 @@ def _yaml_scalar(value: Any) -> str:
     if value is False:
         return "false"
     if isinstance(value, str):
-        if not value or re.search(r"[:#\[\]{},]|^\s|\s$", value):
+        if (not value or re.search(r"[:#\[\]{},]|^\s|\s$", value)
+                or not isinstance(_scalar(value), str)):
             return json.dumps(value)
         return value
     if isinstance(value, list):
@@ -155,7 +156,7 @@ def validate(data: dict[str, Any], root: Path | str) -> Configuration:
         "documents": {"source_directory", "supported_types"},
         "preprocessing": {"unicode_normalization", "remove_extra_whitespace", "lowercase"},
         "chunking": {"strategy", "chunk_size", "chunk_overlap"},
-        "embedding": {"model", "revision", "normalize_embeddings", "batch_size"},
+        "embedding": {"model", "revision", "normalize_embeddings", "batch_size", "pooling", "dimension"},
         "vector_store": {"provider", "collection", "persist_directory"},
     }
     for section, values in data.items():
@@ -197,10 +198,17 @@ def validate(data: dict[str, Any], root: Path | str) -> Configuration:
         raise ConfigurationError("embedding.model must be a non-empty string")
     if revision is not None and (not isinstance(revision, str) or not revision):
         raise ConfigurationError("embedding.revision must be an exact revision or null")
+    pooling = data["embedding"].get("pooling", "model-default")
+    if not isinstance(pooling, str) or pooling not in {"model-default", "mean", "max", "cls", "mean_sqrt_len_tokens", "weightedmean", "lasttoken"}:
+        raise ConfigurationError("Unsupported embedding.pooling")
+    dimension = data["embedding"].get("dimension")
+    if dimension is not None and (isinstance(dimension, bool) or not isinstance(dimension, int) or dimension <= 0):
+        raise ConfigurationError("embedding.dimension must be a positive integer or null")
     effective = {
         "preprocessing": data["preprocessing"],
         "chunking": data["chunking"],
-        "embedding": {key: data["embedding"][key] for key in ("model", "revision", "normalize_embeddings")},
+        "embedding": {**{key: data["embedding"][key] for key in ("model", "revision", "normalize_embeddings")},
+                      "pooling": pooling, "dimension": dimension},
     }
     digest = hashlib.sha256(json.dumps(effective, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     return Configuration(data=data, effective_hash=digest)
@@ -215,11 +223,26 @@ def load(root: Path | str = ".") -> Configuration:
 
 
 def set_value(root: Path | str, key: str, raw_value: str) -> tuple[Any, Any]:
+    from .repository import repository_lock
+    from .objects import RepositoryError
+    try:
+        with repository_lock(Path(root).resolve()):
+            return _set_value(root, key, raw_value)
+    except RepositoryError as exc:
+        raise ConfigurationError(str(exc)) from exc
+
+
+def _set_value(root: Path | str, key: str, raw_value: str) -> tuple[Any, Any]:
     root = Path(root).absolute()
     current = load(root)
     dotted = canonical_key(key)
+    if dotted in {"embedding.pooling", "embedding.dimension"}:
+        current.data["embedding"].setdefault("pooling", "model-default")
+        current.data["embedding"].setdefault("dimension", None)
     old = _get(current.data, dotted)
-    if isinstance(old, bool):
+    if dotted == "embedding.dimension":
+        value = _scalar(raw_value)
+    elif isinstance(old, bool):
         value = _scalar(raw_value)
         if not isinstance(value, bool):
             raise ConfigurationError(f"{dotted} must be true or false")
@@ -228,7 +251,8 @@ def set_value(root: Path | str, key: str, raw_value: str) -> tuple[Any, Any]:
         if not isinstance(value, int) or isinstance(value, bool):
             raise ConfigurationError(f"{dotted} must be an integer")
     elif old is None:
-        value = None if raw_value.lower() in {"null", "~"} else raw_value
+        value = (None if raw_value.lower() in {"null", "~"} else
+                 _scalar(raw_value) if dotted == "embedding.dimension" else raw_value)
     else:
         value = raw_value
     proposed = json.loads(json.dumps(current.data))

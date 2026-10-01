@@ -250,7 +250,7 @@ def _stage_document(root: Path, path: Path, relative: str, settings: configurati
         return {**previous, "occurrences": occurrences}
 
     try:
-        document = load(path, settings)
+        document = load(path, settings, raw=raw)
     except DocumentError as exc:
         raise AddError(str(exc)) from exc
 
@@ -286,6 +286,16 @@ def _stage_document(root: Path, path: Path, relative: str, settings: configurati
 
 
 def add(paths: list[str], *, directory: Path | str = ".") -> Result:
+    from ..repository import repository_lock
+    try:
+        root = objects.find_repository(Path(directory))
+        with repository_lock(root):
+            return _add(paths, directory=root)
+    except RepositoryError as exc:
+        raise AddError(str(exc)) from exc
+
+
+def _add(paths: list[str], *, directory: Path | str = ".") -> Result:
     """Stage the given files and directories. Returns a summary on success."""
     if not paths:
         raise AddError("Nothing to add. Name at least one file or directory.")
@@ -319,7 +329,8 @@ def add(paths: list[str], *, directory: Path | str = ".") -> Result:
     reuse = index.get("config") == config_digest
 
     scope = [request.relative for request in requests]
-    documents = dict(index["documents"])
+    previous_documents = index["documents"]
+    documents = dict(previous_documents)
     result = Result(requests=requests)
 
     seen: set[str] = set()
@@ -361,6 +372,8 @@ def add(paths: list[str], *, directory: Path | str = ".") -> Result:
     index["documents"] = documents
     index["tracked_roots"] = _prune_nested(roots)
     index["config"] = config_digest
+    if index.get("generation") and (documents != previous_documents or not reuse):
+        index.pop("generation", None)
     try:
         objects.publish_index(root, index)
     except OSError as exc:

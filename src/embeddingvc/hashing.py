@@ -47,7 +47,8 @@ def canonical_json(payload: object) -> bytes:
     Object files are written through this so that re-serializing an unchanged
     object reproduces the bytes its hash was taken over.
     """
-    return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode(_ENCODING)
+    return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True,
+                      allow_nan=False).encode(_ENCODING)
 
 
 def hash_payload(payload: object) -> str:

@@ -11,6 +11,8 @@ from ..change_detector import compare
 from ..chunking import split_text
 from ..document_loader import DocumentError, extractor_versions, load
 from ..hashing import hash_bytes, hash_payload
+from ..embedding_engine import effective_configuration
+from ..object_store import read_object
 
 
 class StatusError(Exception):
@@ -110,12 +112,13 @@ def _status(directory):
             files[file.relative_to(root).as_posix()] = file
     working = {}
     for name, file in sorted(files.items()):
-        document = load(file, settings)
+        raw = file.read_bytes()
+        document = load(file, settings, raw=raw)
         occurrences = []
         for chunk in split_text(document.text, settings.chunking.chunk_size, settings.chunking.chunk_overlap):
             digest = hash_payload({"schema": objects.CHUNK_SCHEMA, "text": chunk.text, "characters": len(chunk.text)})
             occurrences.append({"chunk": digest})
-        working[name] = {"content_hash": hash_bytes(file.read_bytes()), "occurrences": occurrences}
+        working[name] = {"content_hash": hash_bytes(raw), "occurrences": occurrences}
 
     untracked_files = []
     source = root / settings.source_directory
@@ -139,6 +142,26 @@ def _status(directory):
                     continue
                 if not isinstance(embedding, dict) or embedding.get("fingerprint") != fingerprint:
                     stale.add(digest)
+                    continue
+                if embedding.get("embedding_config_hash"):
+                    try:
+                        vector = read_object(root, "embeddings", embedding.get("vector"))
+                        read_object(root, "configs", state.get("config_object"))
+                        recorded = read_object(root, "configs", state.get("embedding_config"))
+                    except objects.RepositoryError:
+                        issues.add(digest)
+                        continue
+                    current_hash = hash_payload(effective_configuration(
+                        settings, snapshot, vector["dimension"], vector["provenance"]))
+                    if current_hash != vector["embedding_config_hash"]:
+                        stale.add(digest)
+                    elif (vector["chunk_hash"] == digest
+                            and embedding["embedding_config_hash"] == current_hash
+                            and state.get("embedding_config_hash") == current_hash
+                            and hash_payload(recorded) == current_hash):
+                        ready.add(digest)
+                    else:
+                        issues.add(digest)
                     continue
                 vector = _object(root, "vectors", embedding.get("vector"))
                 values = vector.get("values") if vector else None
@@ -167,7 +190,7 @@ def _status(directory):
     if issues:
         lines.append(f"Missing/corrupt object references: {len(issues)} unique chunks; regeneration required.")
     if changed or config_changed:
-        lines.append("Working state differs from index. Run embeddingvc add <path>, then embeddingvc embed when available.")
+        lines.append("Working state differs from index. Run embeddingvc embed to refresh tracked sources.")
     else:
         lines.append("Working state matches index.")
     if untracked:

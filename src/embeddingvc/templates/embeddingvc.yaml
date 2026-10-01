@@ -19,6 +19,9 @@ embedding:
   model: BAAI/bge-small-en-v1.5
   # Set an immutable model commit revision before generating embeddings.
   revision: null
+  pooling: model-default
+  # Optional expected dimension; null uses the model's reported dimension.
+  dimension: null
   normalize_embeddings: true
   batch_size: 32
 

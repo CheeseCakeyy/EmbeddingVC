@@ -51,6 +51,16 @@ class ConfigTests(unittest.TestCase):
         self.assertEqual(identity, {"repository": {"name": "repo"}})
         self.assertNotIn("chunking", identity)
 
+    def test_dimension_can_be_reset_to_model_default(self):
+        set_(self.root, "embedding.dimension", "384")
+        set_(self.root, "embedding.dimension", "null")
+        self.assertIsNone(load(self.root).data["embedding"]["dimension"])
+
+    def test_numeric_model_revision_stays_a_string(self):
+        revision = "1" * 40
+        set_(self.root, "model_revision", revision)
+        self.assertEqual(load(self.root).data["embedding"]["revision"], revision)
+
 
 if __name__ == "__main__":
     unittest.main()
