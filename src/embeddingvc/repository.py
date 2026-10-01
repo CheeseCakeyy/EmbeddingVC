@@ -149,7 +149,15 @@ def repository_lock(root: Path):
                 owned = True
                 sentinel.write(token)
             from .commit_manager import recover_publication
+            from .restore_engine import recover_checkout, TRANSACTION
+            checkout_marker = root / TRANSACTION
+            reject_links(checkout_marker, root)
+            commit_marker = root / ".embeddingvc/transactions/commit.json"
+            reject_links(commit_marker, root)
+            if checkout_marker.exists() and commit_marker.exists():
+                raise RepositoryError("Conflicting commit and checkout transactions; recovery required")
             recover_publication(root)
+            recover_checkout(root)
             yield
         finally:
             if owned:

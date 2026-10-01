@@ -1,7 +1,7 @@
 # EmbeddingVC
 
 Git-inspired version control for embedding collections. Implemented commands:
-`init`, `config`, `add`, `status`, `embed`, `commit`, `branch`, `log`, and `diff`, using Python 3.11+.
+`init`, `config`, `add`, `status`, `embed`, `commit`, `branch`, `log`, `diff`, and `checkout`, using Python 3.11+.
 
 ## Requirements
 
@@ -123,7 +123,7 @@ HEAD points to `refs/heads/main`; the empty main reference means no commit yet.
 The index starts as `{"version": 1, "documents": {}}`.
 
 The config leaves the model revision unset; pin an immutable model commit before
-embedding generation. `checkout` is a future milestone. See [history and diff](docs/history.md) for snapshot inspection.
+embedding generation. Use [checkout](docs/checkout.md) to restore a snapshot or repair HEAD synchronization. See [history and diff](docs/history.md) for snapshot inspection.
 No models or database packages are installed by init.
 
 ## Generate embeddings
