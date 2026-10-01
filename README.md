@@ -1,7 +1,7 @@
 # EmbeddingVC
 
 Git-inspired version control for embedding collections. Implemented commands:
-`init`, `config`, `add`, `status`, `embed`, and `branch`, using Python 3.11+.
+`init`, `config`, `add`, `status`, `embed`, `commit`, and `branch`, using Python 3.11+.
 
 ## Requirements
 
@@ -123,7 +123,7 @@ HEAD points to `refs/heads/main`; the empty main reference means no commit yet.
 The index starts as `{"version": 1, "documents": {}}`.
 
 The config leaves the model revision unset; pin an immutable model commit before
-embedding generation. `commit`, `log`, and `checkout` are future milestones.
+embedding generation. `log` and `checkout` are future milestones.
 No models or database packages are installed by init.
 
 ## Generate embeddings
@@ -155,6 +155,19 @@ The model's pooling is used by default. Optional `embedding.pooling` and
 `embedding.dimension` settings select a pooling mode and expected dimension.
 Model weights use the normal library cache. See [the embed guide](docs/embed.md)
 for the storage contract and opt-in real-model test.
+
+## Commit an embedded snapshot
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -e ".[vector-store]"
+embeddingvc commit -m "Initial knowledge-base embeddings"
+```
+
+Commit saves a complete immutable snapshot and synchronizes Chroma from stored
+vectors. It rejects stale candidates and unchanged snapshots. If synchronization
+fails after publication, rerun commit to repair the existing snapshot without
+creating another one. See [the commit guide](docs/commit.md) for recovery and the
+shared checkout integration contract.
 
 ## Create and list branches
 

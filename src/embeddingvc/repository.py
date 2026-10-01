@@ -111,18 +111,51 @@ def initialize(directory: Path | str = ".", *, force: bool = False) -> Path:
 
 @contextmanager
 def repository_lock(root: Path):
-    """Serialize mutations of working configuration and the candidate index."""
+    """Serialize mutations with an OS lock that is released on process death.
+
+    The persistent guard inode must never be removed. The short-lived `lock`
+    sentinel remains compatible with older callers; only our own stale sentinel
+    is reclaimable while holding the guard, never an unknown/legacy lock.
+    """
     from .object_store import reject_links
     from .objects import RepositoryError
 
     path = root / ".embeddingvc" / "lock"
+    guard_path = root / ".embeddingvc" / "mutation.lock"
     reject_links(path, root)
-    try:
-        fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-    except FileExistsError as exc:
-        raise RepositoryError("Repository is locked by another operation (.embeddingvc/lock)") from exc
-    try:
-        os.close(fd)
-        yield
-    finally:
-        path.unlink(missing_ok=True)
+    reject_links(guard_path, root)
+    with guard_path.open("a+b") as guard:
+        if guard.seek(0, os.SEEK_END) == 0:
+            guard.write(b"0")
+            guard.flush()
+        guard.seek(0)
+        try:
+            if os.name == "nt":
+                import msvcrt
+                msvcrt.locking(guard.fileno(), msvcrt.LK_NBLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(guard.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError as exc:
+            raise RepositoryError("Repository is locked by another operation (.embeddingvc/lock)") from exc
+        owned = False
+        try:
+            token = b"embeddingvc-advisory-v1\n"
+            if path.exists():
+                if path.read_bytes() != token:
+                    raise RepositoryError("Repository is locked by another operation (.embeddingvc/lock)")
+                path.unlink()  # The guard proves no current caller owns it.
+            with path.open("xb") as sentinel:
+                owned = True
+                sentinel.write(token)
+            from .commit_manager import recover_publication
+            recover_publication(root)
+            yield
+        finally:
+            if owned:
+                path.unlink(missing_ok=True)
+            guard.seek(0)
+            if os.name == "nt":
+                msvcrt.locking(guard.fileno(), msvcrt.LK_UNLCK, 1)
+            else:
+                fcntl.flock(guard.fileno(), fcntl.LOCK_UN)

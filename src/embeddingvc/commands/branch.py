@@ -68,7 +68,9 @@ def _commit_ids(root: Path) -> list[str]:
     ids: list[str] = []
     for entry in commits.iterdir():
         if entry.is_file() and not entry.is_symlink() and entry.name != ".lock":
-            ids.append(entry.name)
+            identifier = entry.stem if entry.suffix == ".json" else entry.name
+            if _HEX_REVISION.fullmatch(identifier):
+                ids.append(identifier)
     return ids
 
 
@@ -138,19 +140,13 @@ def _validate_name(name: str) -> None:
 
 @contextmanager
 def _repository_lock(root: Path) -> Iterator[None]:
-    lock = root / ".embeddingvc" / "refs" / "heads" / ".lock"
+    from ..repository import repository_lock
+    from ..objects import RepositoryError
     try:
-        fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-    except FileExistsError as exc:
-        raise BranchError("Repository is locked by another branch operation") from exc
-    try:
-        os.close(fd)
-        yield
-    finally:
-        try:
-            lock.unlink()
-        except FileNotFoundError:
-            pass
+        with repository_lock(root):
+            yield
+    except RepositoryError as exc:
+        raise BranchError(str(exc)) from exc
 
 
 def create_branch(root: Path | str = ".", name: str = "", start: str | None = None) -> str:

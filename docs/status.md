@@ -18,12 +18,13 @@ the pending content hashes. File renames are additions and deletions.
 
 ## Storage contracts
 
-Embed uses the contract in [embed.md](embed.md). Commit remains a future command;
-its status fixtures use the snapshot shape below:
+Embed uses the contract in [embed.md](embed.md); history publication is described
+in [commit.md](commit.md). Status reads the following snapshot shape:
 
-- `.embeddingvc/commits/<sha256>` is canonical-JSON-addressed snapshot data with
+- `.embeddingvc/commits/<sha256>.json` is canonical-JSON-addressed snapshot data with
   `documents` and `config`, using the same document records as index version 2.
-  The commit filename must equal `hash_payload(snapshot)`.
+  The commit filename stem must equal `hash_payload(snapshot)`. The original
+  extensionless snapshot format remains readable for compatibility.
 - An occurrence's embedding reference is `{ "vector": "<sha256>",
   "fingerprint": "<embedding fingerprint>", "embedding_config_hash": "<sha256>" }`.
 - `.embeddingvc/objects/embeddings/<sha256>.json` contains `chunk_hash`,
@@ -37,8 +38,8 @@ its status fixtures use the snapshot shape below:
 - Optional `.embeddingvc/sync.json` contains a `status` of `pending`, `failed`,
   or `synced`. Absence means no synchronization state has been recorded.
 
-Coordinate the commit contract with its implementation. Status fails
-clearly for an invalid HEAD snapshot rather than assuming an empty baseline.
+Status fails clearly for an invalid HEAD snapshot rather than assuming an empty
+baseline. It never recovers an interrupted transaction; the next mutation does.
 
 ## Tests
 
