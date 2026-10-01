@@ -1,15 +1,16 @@
 # EmbeddingVC
 
-Git-inspired version control for embedding collections. The first milestone
-implements repository initialization using Python 3.11+ and the standard library.
+Git-inspired version control for embedding collections. Implemented commands:
+`init`, `config`, `add`, `status`, `embed`, and `branch`, using Python 3.11+.
 
 ## Requirements
 
 - Python 3.11 or newer
 - Git
 
-EmbeddingVC currently uses only the Python standard library. Installing it in a
-virtual environment keeps each contributor's machine isolated and reproducible.
+Document staging uses PyYAML and PyMuPDF. Embedding generation optionally uses
+Sentence Transformers. Installing in a virtual environment keeps each
+contributor's machine isolated and reproducible.
 
 ## Install for development
 
@@ -122,8 +123,38 @@ HEAD points to `refs/heads/main`; the empty main reference means no commit yet.
 The index starts as `{"version": 1, "documents": {}}`.
 
 The config leaves the model revision unset; pin an immutable model commit before
-embedding generation. `status`, `embed`, `commit`, `log`, and `checkout` are future
-milestones. No models or database packages are installed by init.
+embedding generation. `commit`, `log`, and `checkout` are future milestones.
+No models or database packages are installed by init.
+
+## Generate embeddings
+
+Install the embedding dependencies once from the source checkout:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -e ".[embeddings]"
+```
+
+In an initialized collection, pin the model's full 40-character commit SHA,
+track your source directory, and prepare the candidate:
+
+```text
+embeddingvc config set model_revision <exact-model-commit>
+embeddingvc add data
+embeddingvc embed
+embeddingvc status
+```
+
+`embed` refreshes every tracked root, including edits, new supported files and
+deletions. Identical compatible chunks share one immutable embedding object;
+an unchanged second run makes zero encoder calls. It verifies stored objects
+and model dimensions, then rechecks sources and configuration before atomically
+publishing the index. Failed runs preserve the previous index and retain valid
+objects for retry. It does not create a commit or modify the active database.
+
+The model's pooling is used by default. Optional `embedding.pooling` and
+`embedding.dimension` settings select a pooling mode and expected dimension.
+Model weights use the normal library cache. See [the embed guide](docs/embed.md)
+for the storage contract and opt-in real-model test.
 
 ## Create and list branches
 
@@ -157,9 +188,10 @@ macOS and Linux:
 .venv/bin/python -m unittest discover -s tests -v
 ```
 
-The suite tests initialization, existing-file protection, `--force`, Git ignore
-preservation, invalid targets, rollback after a simulated failure, and CLI error
-handling. A successful run currently reports `Ran 9 tests` followed by `OK`.
+The suite covers initialization, config, branches, staging, status and embedding
+generation, including reuse, stale settings, corruption and atomic failures.
+Embedding unit tests use a deterministic fake encoder without downloading
+models. Real-model integration is opt-in; see [the embed guide](docs/embed.md).
 
 ## Team workflow
 

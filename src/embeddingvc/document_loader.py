@@ -86,11 +86,7 @@ def extractor_versions(extensions: tuple[str, ...]) -> dict:
     return versions
 
 
-def _load_text(path: Path, config: Config) -> LoadedDocument:
-    try:
-        raw = path.read_bytes()
-    except OSError as exc:
-        raise DocumentError(f"{path}: cannot be read: {exc}") from exc
+def _load_text(path: Path, config: Config, raw: bytes) -> LoadedDocument:
     try:
         text = raw.decode("utf-8")
     except UnicodeDecodeError as exc:
@@ -102,7 +98,7 @@ def _load_text(path: Path, config: Config) -> LoadedDocument:
     return LoadedDocument(text=normalized, spans=spans, extractor="text", extractor_version="1")
 
 
-def _load_pdf(path: Path, config: Config) -> LoadedDocument:
+def _load_pdf(path: Path, config: Config, raw: bytes) -> LoadedDocument:
     try:
         import pymupdf
     except ModuleNotFoundError:
@@ -113,7 +109,7 @@ def _load_pdf(path: Path, config: Config) -> LoadedDocument:
                 f"{path}: PyMuPDF is required to read PDF documents. Install the project dependencies."
             ) from exc
     try:
-        document = pymupdf.open(path)
+        document = pymupdf.open(stream=raw, filetype="pdf")
     except Exception as exc:  # PyMuPDF raises library-specific errors
         raise DocumentError(f"{path}: is not a readable PDF: {exc}") from exc
     try:
@@ -157,11 +153,17 @@ def _load_pdf(path: Path, config: Config) -> LoadedDocument:
         document.close()
 
 
-def load(path: Path, config: Config) -> LoadedDocument:
-    """Read one document, dispatching on its extension."""
+def load(path: Path, config: Config, *, raw: bytes | None = None) -> LoadedDocument:
+    """Extract a single byte snapshot, optionally supplied by the hashing caller."""
     suffix = path.suffix.lower()
+    if suffix not in (*TEXT_EXTENSIONS, PDF_EXTENSION):
+        raise DocumentError(f"{path}: '{suffix}' documents cannot be read yet.")
+    if raw is None:
+        try:
+            raw = path.read_bytes()
+        except OSError as exc:
+            raise DocumentError(f"{path}: cannot be read: {exc}") from exc
     if suffix in TEXT_EXTENSIONS:
-        return _load_text(path, config)
+        return _load_text(path, config, raw)
     if suffix == PDF_EXTENSION:
-        return _load_pdf(path, config)
-    raise DocumentError(f"{path}: '{suffix}' documents cannot be read yet.")
+        return _load_pdf(path, config, raw)

@@ -4,19 +4,24 @@ This folder is managed by EmbeddingVC.
 
 ## Getting started
 
-1. Place `.txt`, `.md`, `.pdf`, or `.docx` documents inside `data/`.
+1. Place `.txt`, `.md`, or text-based `.pdf` documents inside `data/`.
 2. Review `embeddingvc.yaml`, including the repository name, collection name,
    and immutable embedding model revision (currently unset).
 
-Only `embeddingvc init` is implemented in this milestone. The planned workflow is:
+Install the optional embedding dependencies with `pip install -e ".[embeddings]"`
+from the EmbeddingVC source checkout. Pin the model revision to a full
+40-character commit SHA, then prepare your collection:
 
 ```sh
-embeddingvc status
+embeddingvc config set model_revision <exact-model-commit>
+embeddingvc add data
 embeddingvc embed
-embeddingvc commit -m "Initial embedding collection"
-embeddingvc log
-embeddingvc checkout <commit-id>
+embeddingvc status
 ```
+
+`embed` rescans tracked roots and reuses verified compatible vectors. It prepares
+the candidate index without committing or updating the database. Commit, log
+and checkout are future milestones. DOCX extraction is not yet supported.
 
 ## Folder responsibilities
 

@@ -125,6 +125,8 @@ class Config:
             "model": self.embedding.get("model"),
             "revision": self.embedding.get("revision"),
             "normalize_embeddings": self.embedding.get("normalize_embeddings"),
+            "pooling": self.embedding.get("pooling", "model-default"),
+            "dimension": self.embedding.get("dimension"),
         })
 
 
