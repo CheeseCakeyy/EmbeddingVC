@@ -6,6 +6,7 @@ from pathlib import Path
 from . import __version__
 from .commands.add import AddError, add
 from .commands.embed import EmbedError, embed
+from .commands.commit import CommitError, commit
 from .commands.status import StatusError, status
 from .commands.branch import BranchError, branch
 from .commands.config import get as config_get
@@ -37,8 +38,13 @@ def app(argv: list[str] | None = None) -> None:
     add_parser.add_argument("paths", nargs="+", help="Files or directories inside the repository")
     commands.add_parser("status", help="Show document changes and embedding readiness")
     commands.add_parser("embed", help="Generate embeddings and prepare the candidate snapshot")
+    commit_parser = commands.add_parser("commit", help="Save an immutable snapshot and synchronize Chroma")
+    commit_parser.add_argument("-m", "--message", required=True, help="Describe this snapshot")
     args = parser.parse_args(argv)
     try:
+        if args.command == "commit":
+            print(commit(message=args.message).render())
+            return
         if args.command == "embed":
             print(embed().render())
             return
@@ -60,7 +66,7 @@ def app(argv: list[str] | None = None) -> None:
                 print(config_set(Path("."), args.key, args.value))
             return
         root = initialize(args.directory, force=args.force)
-    except (InitializationError, BranchError, ConfigurationError, AddError, StatusError, EmbedError, OSError) as exc:
+    except (InitializationError, BranchError, ConfigurationError, AddError, StatusError, EmbedError, CommitError, OSError) as exc:
         parser.exit(1, f"Error: {exc}\n")
     print(f"EmbeddingVC repository initialized at {root}.\n")
     print("Next steps:\n1. Add documents to data/\n2. Review embeddingvc.yaml")

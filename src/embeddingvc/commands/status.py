@@ -73,7 +73,8 @@ def _baseline(root):
         label = f"HEAD detached at {commit[:7]}"
     if not _digest(commit):
         raise StatusError("Invalid HEAD commit identifier")
-    payload = _read(metadata / "commits" / commit, root)
+    from ..commit_manager import read_commit
+    payload = read_commit(root, commit)
     if not isinstance(payload, dict) or hash_payload(payload) != commit:
         raise StatusError("HEAD commit is corrupt")
     return label, _snapshot(payload)

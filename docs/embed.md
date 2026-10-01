@@ -21,8 +21,9 @@ Next: embeddingvc commit -m "Describe this update"
 This is illustrative output. Reused occurrences include repeated appearances
 of a newly generated chunk; generation happens once per unique compatible text.
 An unchanged second run calls no encoder batches, although it still loads the
-pinned model to validate dimensions and provenance. Commit is a future command.
-Embed never modifies HEAD, branch refs, commits, sync state or the active database.
+pinned model to validate dimensions and provenance. Use [commit](commit.md) to
+publish the prepared snapshot. Embed does not publish new history or synchronize
+the database. Like every mutation, it first recovers any interrupted publication.
 
 ## Configuration and provenance
 
