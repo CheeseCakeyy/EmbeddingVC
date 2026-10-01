@@ -5,6 +5,7 @@ from pathlib import Path
 
 from . import __version__
 from .commands.log import log
+from .commands.checkout import checkout
 from .commands.diff import diff
 from .objects import RepositoryError
 from .commands.add import AddError, add
@@ -58,8 +59,14 @@ def app(argv: list[str] | None = None) -> None:
     diff_parser = commands.add_parser("diff", help="Compare two committed snapshots")
     diff_parser.add_argument("old", help="Old revision")
     diff_parser.add_argument("new", help="New revision")
+    checkout_parser = commands.add_parser("checkout", help="Restore a snapshot or repair HEAD synchronization")
+    checkout_parser.add_argument("revision", help="Branch, commit revision, or HEAD for sync repair")
+    checkout_parser.add_argument("--force", action="store_true", help="Discard staged/configuration changes; preserve source files")
     args = parser.parse_args(argv)
     try:
+        if args.command == "checkout":
+            print(checkout(args.revision, force=args.force).render())
+            return
         if args.command == "log":
             print(log(limit=args.limit))
             return

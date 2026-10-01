@@ -164,23 +164,29 @@ def sync_commit(root, digest, *, adapter_factory=None):
     This never reads working documents, generates vectors or creates history.
     sync.json is the authoritative pointer to the validated physical collection.
     """
-    from .vector_store.chromadb_adapter import ChromaAdapter
-
     marker = root / ".embeddingvc/sync.json"
     write_json(root, marker, {"commit": digest, "status": "pending"})
     try:
-        manifest = read_commit(root, digest)
-        configuration = read_object(root, "configs", manifest["config_object"])
-        rows, dimension = records(root, manifest)
-        adapter = (adapter_factory or ChromaAdapter)(root, configuration["vector_store"])
-        collection = adapter.replace(digest, rows, dimension)
-        write_json(root, marker, {"commit": digest, "status": "synced", "collection": collection,
-                                 "persist_directory": configuration["vector_store"]["persist_directory"],
-                                 "records": len(rows), "dimension": dimension})
-        return len(rows)
+        sync = prepare_sync(root, digest, adapter_factory=adapter_factory)
+        write_json(root, marker, sync)
+        return sync["records"]
     except Exception as exc:
         try:
             write_json(root, marker, {"commit": digest, "status": "failed", "error": str(exc)})
         except OSError:
             pass  # A durable pending marker is also explicitly not ready.
         raise
+
+
+def prepare_sync(root, digest, *, adapter_factory=None):
+    """Build a verified replacement without changing the active sync pointer."""
+    from .vector_store.chromadb_adapter import ChromaAdapter
+
+    manifest = read_commit(root, digest)
+    configuration = read_object(root, "configs", manifest["config_object"])
+    rows, dimension = records(root, manifest)
+    adapter = (adapter_factory or ChromaAdapter)(root, configuration["vector_store"])
+    collection = adapter.replace(digest, rows, dimension)
+    return {"commit": digest, "status": "synced", "collection": collection,
+            "persist_directory": configuration["vector_store"]["persist_directory"],
+            "records": len(rows), "dimension": dimension}

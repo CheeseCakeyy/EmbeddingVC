@@ -196,12 +196,17 @@ def _status(directory):
         lines.append("Working state matches index.")
     if untracked:
         lines.append("Untracked documents (run embeddingvc add <path>): " + ", ".join(untracked))
+    checkout_marker = root / ".embeddingvc/transactions/checkout.json"
+    _reject_links(checkout_marker, root)
+    if checkout_marker.exists():
+        lines.append("Checkout publication is incomplete; retry embeddingvc checkout HEAD to recover.")
     sync_path = root / ".embeddingvc" / "sync.json"
     if sync_path.exists():
         sync = _read(sync_path, root)
         if not isinstance(sync, dict) or sync.get("status") not in {"pending", "failed", "synced"}:
             raise StatusError("Invalid sync.json status")
-        lines.append(f"Database synchronization: {sync['status']}")
+        sync_status = "pending (checkout recovery required)" if checkout_marker.exists() else sync['status']
+        lines.append(f"Database synchronization: {sync_status}")
     if not any(comparison[g][k] for g in ("documents", "chunks") for k in ("added", "modified", "deleted", "stale") if k in comparison[g]) and not pending and not untracked and not config_changed:
         lines.append("No document or embedding changes.")
     return "\n".join(lines)
