@@ -4,6 +4,9 @@ import argparse
 from pathlib import Path
 
 from . import __version__
+from .commands.log import log
+from .commands.diff import diff
+from .objects import RepositoryError
 from .commands.add import AddError, add
 from .commands.embed import EmbedError, embed
 from .commands.commit import CommitError, commit
@@ -14,6 +17,16 @@ from .commands.config import set_ as config_set
 from .commands.config import show as config_show
 from .config import ConfigurationError
 from .repository import InitializationError, initialize
+
+
+def positive_limit(value: str) -> int:
+    try:
+        number = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("limit must be a positive integer") from exc
+    if number <= 0:
+        raise argparse.ArgumentTypeError("limit must be a positive integer")
+    return number
 
 
 def app(argv: list[str] | None = None) -> None:
@@ -40,8 +53,19 @@ def app(argv: list[str] | None = None) -> None:
     commands.add_parser("embed", help="Generate embeddings and prepare the candidate snapshot")
     commit_parser = commands.add_parser("commit", help="Save an immutable snapshot and synchronize Chroma")
     commit_parser.add_argument("-m", "--message", required=True, help="Describe this snapshot")
+    log_parser = commands.add_parser("log", help="Show committed history, newest first")
+    log_parser.add_argument("--limit", type=positive_limit, help="Maximum number of commits")
+    diff_parser = commands.add_parser("diff", help="Compare two committed snapshots")
+    diff_parser.add_argument("old", help="Old revision")
+    diff_parser.add_argument("new", help="New revision")
     args = parser.parse_args(argv)
     try:
+        if args.command == "log":
+            print(log(limit=args.limit))
+            return
+        if args.command == "diff":
+            print(diff(args.old, args.new))
+            return
         if args.command == "commit":
             print(commit(message=args.message).render())
             return
@@ -66,7 +90,7 @@ def app(argv: list[str] | None = None) -> None:
                 print(config_set(Path("."), args.key, args.value))
             return
         root = initialize(args.directory, force=args.force)
-    except (InitializationError, BranchError, ConfigurationError, AddError, StatusError, EmbedError, CommitError, OSError) as exc:
+    except (RepositoryError, InitializationError, BranchError, ConfigurationError, AddError, StatusError, EmbedError, CommitError, OSError) as exc:
         parser.exit(1, f"Error: {exc}\n")
     print(f"EmbeddingVC repository initialized at {root}.\n")
     print("Next steps:\n1. Add documents to data/\n2. Review embeddingvc.yaml")
