@@ -13,6 +13,8 @@ dependencies = ["PyYAML>=6.0,<7", "PyMuPDF==1.28.2"]
 [project.optional-dependencies]
 embeddings = ["sentence-transformers>=5.1,<6"]
 vector-store = ["chromadb>=1.0,<2"]
+# Everything needed for embed, commit, checkout and benchmark.
+all = ["embeddingvc[embeddings,vector-store]"]
 
 [project.scripts]
 embeddingvc = "embeddingvc.cli:app"

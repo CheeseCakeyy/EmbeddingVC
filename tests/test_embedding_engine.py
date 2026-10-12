@@ -33,7 +33,7 @@ class EncoderAdapterTests(unittest.TestCase):
         self.model = MagicMock()
         self.model._modules = {"0": transformer, "1": FakePooling()}
         self.model._first_module.return_value = transformer
-        self.model.get_sentence_embedding_dimension.return_value = 8
+        self.model.get_embedding_dimension.return_value = 8
         self.model.tokenizer = tokenizer
         self.model.max_seq_length = 128
         self.model.prompts = {}
@@ -79,11 +79,30 @@ class EncoderAdapterTests(unittest.TestCase):
         with self.assertRaisesRegex(EmbeddingError, "revision"):
             SentenceTransformerEncoder(self.settings)
 
+    def test_older_dimension_method_is_still_supported(self):
+        self.model.get_embedding_dimension = None  # sentence-transformers < 5.x name only
+        self.model.get_sentence_embedding_dimension.return_value = 8
+        self.assertEqual(SentenceTransformerEncoder(self.settings).dimension, 8)
+
+    def test_revision_verified_from_hub_cache_when_config_lacks_commit(self):
+        # transformers 5 no longer sets config._commit_hash.
+        self.model._first_module().auto_model.config = types.SimpleNamespace(
+            to_dict=lambda: {"hidden_size": 8})
+        snapshot = f"/cache/models--fake--model/snapshots/{'a' * 40}/config.json"
+        with patch("huggingface_hub.try_to_load_from_cache", return_value=snapshot) as lookup:
+            encoder = SentenceTransformerEncoder(self.settings)
+        lookup.assert_called_once_with("fake/model", "config.json", revision="a" * 40)
+        self.assertEqual(encoder.provenance["model_revision"], "a" * 40)
+        for cached in (f"/cache/models--fake--model/snapshots/{'b' * 40}/config.json", None):
+            with patch("huggingface_hub.try_to_load_from_cache", return_value=cached):
+                with self.assertRaisesRegex(EmbeddingError, "revision"):
+                    SentenceTransformerEncoder(self.settings)
+
     def test_invalid_dimension_and_unsupported_model_pooling_fail(self):
-        self.model.get_sentence_embedding_dimension.return_value = None
+        self.model.get_embedding_dimension.return_value = None
         with self.assertRaisesRegex(EmbeddingError, "positive embedding dimension"):
             SentenceTransformerEncoder(self.settings)
-        self.model.get_sentence_embedding_dimension.return_value = 8
+        self.model.get_embedding_dimension.return_value = 8
         self.model._modules = {}
         with self.assertRaisesRegex(EmbeddingError, "exactly one Pooling"):
             SentenceTransformerEncoder({**self.settings, "pooling": "mean"})

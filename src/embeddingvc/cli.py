@@ -1,6 +1,7 @@
 """Command-line entry point."""
 
 import argparse
+import sys
 from pathlib import Path
 
 from . import __version__
@@ -13,6 +14,9 @@ from .commands.embed import EmbedError, embed
 from .commands.commit import CommitError, commit
 from .commands.status import StatusError, status
 from .commands.branch import BranchError, branch
+from .commands.benchmark import benchmark
+from .benchmarks.common import BenchmarkError
+from .benchmarks.scenarios import SCENARIOS
 from .commands.config import get as config_get
 from .commands.config import set_ as config_set
 from .commands.config import show as config_show
@@ -28,6 +32,24 @@ def positive_limit(value: str) -> int:
     if number <= 0:
         raise argparse.ArgumentTypeError("limit must be a positive integer")
     return number
+
+
+def nonnegative(value: str) -> int:
+    try:
+        number = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("value must be zero or a positive integer") from exc
+    if number < 0:
+        raise argparse.ArgumentTypeError("value must be zero or a positive integer")
+    return number
+
+
+def scenario_list(value: str) -> list[str]:
+    names = [item.strip() for item in value.split(",") if item.strip()]
+    unknown = [name for name in names if name not in SCENARIOS]
+    if not names or unknown:
+        raise argparse.ArgumentTypeError(f"choose from: {', '.join(SCENARIOS)}")
+    return names
 
 
 def app(argv: list[str] | None = None) -> None:
@@ -62,8 +84,26 @@ def app(argv: list[str] | None = None) -> None:
     checkout_parser = commands.add_parser("checkout", help="Restore a snapshot or repair HEAD synchronization")
     checkout_parser.add_argument("revision", help="Branch, commit revision, or HEAD for sync repair")
     checkout_parser.add_argument("--force", action="store_true", help="Discard staged/configuration changes; preserve source files")
+    bench = commands.add_parser("benchmark", help="Compare full, document-level and chunk-level regeneration")
+    bench.add_argument("--seed", type=int, default=42, help="Seed for the synthetic corpus and edits (default 42)")
+    bench.add_argument("--repeats", type=positive_limit, default=3, help="Timed repeats per scenario (default 3)")
+    bench.add_argument("--documents", type=positive_limit, default=200, help="Synthetic corpus size (default 200)")
+    bench.add_argument("--top-k", type=positive_limit, default=10, help="Retrieval cutoff K (default 10)")
+    bench.add_argument("--scenarios", type=scenario_list, help="Comma-separated subset: " + ", ".join(SCENARIOS))
+    bench.add_argument("--model-change-config", help="YAML with a second pinned embedding model and revision")
+    bench.add_argument("--warmup", type=nonnegative, default=8, help="Warm-up inputs per model (default 8)")
+    bench.add_argument("--keep-workspaces", action="store_true", help="Keep every scenario workspace for inspection")
     args = parser.parse_args(argv)
     try:
+        if args.command == "benchmark":
+            result = benchmark(seed=args.seed, repeats=args.repeats, documents=args.documents, top_k=args.top_k,
+                               scenarios=args.scenarios, model_change_config=args.model_change_config,
+                               keep_workspaces=args.keep_workspaces, warmup=args.warmup,
+                               progress=lambda message: print(message, file=sys.stderr, flush=True))
+            print(result.render())
+            if result.failures:
+                parser.exit(1)
+            return
         if args.command == "checkout":
             print(checkout(args.revision, force=args.force).render())
             return
@@ -97,7 +137,7 @@ def app(argv: list[str] | None = None) -> None:
                 print(config_set(Path("."), args.key, args.value))
             return
         root = initialize(args.directory, force=args.force)
-    except (RepositoryError, InitializationError, BranchError, ConfigurationError, AddError, StatusError, EmbedError, CommitError, OSError) as exc:
+    except (RepositoryError, InitializationError, BranchError, ConfigurationError, AddError, StatusError, EmbedError, CommitError, BenchmarkError, OSError) as exc:
         parser.exit(1, f"Error: {exc}\n")
     print(f"EmbeddingVC repository initialized at {root}.\n")
     print("Next steps:\n1. Add documents to data/\n2. Review embeddingvc.yaml")

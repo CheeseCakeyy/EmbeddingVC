@@ -12,7 +12,7 @@ class InitializationError(Exception):
     """Initialization cannot safely proceed."""
 
 
-IGNORE_RULES = ("/output/", "/.embeddingvc/cache/", "/.embeddingvc/objects/")
+IGNORE_RULES = ("/output/", "/.embeddingvc/cache/", "/.embeddingvc/objects/", "/reports/benchmarks/*/workspaces/")
 DIRECTORIES = ("data", "output", "output/chroma", ".embeddingvc",
                ".embeddingvc/objects", ".embeddingvc/commits", ".embeddingvc/refs",
                ".embeddingvc/refs/heads", ".embeddingvc/cache")

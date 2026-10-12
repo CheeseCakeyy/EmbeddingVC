@@ -1,7 +1,8 @@
 # EmbeddingVC
 
 Git-inspired version control for embedding collections. Implemented commands:
-`init`, `config`, `add`, `status`, `embed`, `commit`, `branch`, `log`, `diff`, and `checkout`, using Python 3.11+.
+`init`, `config`, `add`, `status`, `embed`, `commit`, `branch`, `log`, `diff`,
+`checkout`, and `benchmark`, using Python 3.11+.
 
 ## Requirements
 
@@ -20,8 +21,13 @@ Clone the repository, enter it, and create a virtual environment.
 git clone <github-repository-url>
 cd embeddingVC
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e .
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
+
+`requirements.txt` installs the package in editable mode with every optional
+feature (`.[all]`: Sentence Transformers, PyTorch and Chroma). For a minimal
+install without models or a database, use `pip install -e .` instead; `embed`,
+`commit`, `checkout` and `benchmark` then explain which extra to add.
 
 The `-e` editable installation means local source-code changes take effect
 without reinstalling the package. Verify the installation:
@@ -128,10 +134,17 @@ No models or database packages are installed by init.
 
 ## Generate embeddings
 
-Install the embedding dependencies once from the source checkout:
+The embedding dependencies are included in `requirements.txt`. If you made a
+minimal install, add them once from the source checkout:
 
 ```powershell
-.\.venv\Scripts\python.exe -m pip install -e ".[embeddings]"
+.\.venv\Scripts\python.exe -m pip install -e ".[all]"
+```
+
+To find the exact model commit, run:
+
+```powershell
+.\.venv\Scripts\python.exe -c "from huggingface_hub import HfApi; print(HfApi().model_info('BAAI/bge-small-en-v1.5').sha)"
 ```
 
 In an initialized collection, pin the model's full 40-character commit SHA,
@@ -186,6 +199,22 @@ checkout command. It does not switch `HEAD`, copy vectors, or modify Chroma.
 Handled filesystem failures restore overwritten files and remove newly created
 files and empty directories. This is not crash recovery; do not run simultaneous
 initializers or edit managed files during initialization.
+
+## Benchmark regeneration strategies
+
+```text
+embeddingvc benchmark
+embeddingvc benchmark --seed 42 --repeats 3 --documents 200
+embeddingvc benchmark --scenarios edit-5pct,chunk-size --repeats 1
+embeddingvc benchmark --model-change-config second-model.yaml
+```
+
+The benchmark compares full, document-level and chunk-level (EmbeddingVC)
+regeneration on a seeded synthetic corpus with labelled queries, using the
+repository's pinned model. It runs in isolated workspaces and never changes the
+repository's HEAD, index or database. Results, raw measurements and environment
+details are written to `reports/benchmarks/<run-id>/`. See
+[the benchmark guide](docs/benchmark.md) for scenarios, metrics and method.
 
 ## Tests
 

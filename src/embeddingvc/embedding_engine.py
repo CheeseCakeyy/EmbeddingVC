@@ -2,6 +2,7 @@
 
 import re
 from importlib.metadata import version
+from pathlib import Path
 
 from .hashing import hash_payload, hash_text
 from .object_store import validate_vector
@@ -18,6 +19,26 @@ def validate_revision(embedding: dict) -> None:
             "Pin embedding.revision to a full 40-character model commit SHA. "
             "Run embeddingvc config set model_revision <exact-model-commit>."
         )
+
+
+def loaded_revision(model_config, embedding: dict) -> str | None:
+    """Return the commit the loaded weights came from, or None if unknown.
+
+    transformers 4 records it on the config. transformers 5 no longer does, so
+    fall back to the Hugging Face cache, which stores every download under
+    snapshots/<commit>/: the pinned snapshot must hold the loaded config.
+    """
+    resolved = getattr(model_config, "_commit_hash", None)
+    if isinstance(resolved, str) and resolved:
+        return resolved
+    try:
+        from huggingface_hub import try_to_load_from_cache
+    except ImportError:
+        return None
+    cached = try_to_load_from_cache(embedding["model"], "config.json", revision=embedding["revision"])
+    if isinstance(cached, str) and Path(cached).parent.name == embedding["revision"]:
+        return embedding["revision"]
+    return None
 
 
 def effective_configuration(settings, staging: dict, dimension: int, provenance: dict) -> dict:
@@ -46,6 +67,11 @@ class SentenceTransformerEncoder:
                 'pip install -e ".[embeddings]"'
             ) from exc
         try:
+            from transformers.utils import logging as transformers_logging
+            transformers_logging.disable_progress_bar()  # Keep CLI output to results.
+        except Exception:
+            pass
+        try:
             self.model = SentenceTransformer(embedding["model"], revision=embedding["revision"],
                                              trust_remote_code=False, device="cpu")
             # encode(precision="float32") controls output quantization; it does
@@ -61,7 +87,11 @@ class SentenceTransformerEncoder:
                 width = previous.get_config_dict()["word_embedding_dimension"]
                 self.model._modules[name] = models.Pooling(
                     width, pooling_mode=mode, include_prompt=previous.include_prompt)
-            dimension = self.model.get_sentence_embedding_dimension()
+            # sentence-transformers 5.x renamed the method; keep both working.
+            get_dimension = getattr(self.model, "get_embedding_dimension", None)
+            if not callable(get_dimension):
+                get_dimension = self.model.get_sentence_embedding_dimension
+            dimension = get_dimension()
             if isinstance(dimension, bool) or not isinstance(dimension, int) or dimension <= 0:
                 raise EmbeddingError("Model did not report a positive embedding dimension")
             expected = embedding.get("dimension")
@@ -70,7 +100,7 @@ class SentenceTransformerEncoder:
             self.dimension = dimension
             first = self.model._first_module()
             model_config = first.auto_model.config
-            resolved = getattr(model_config, "_commit_hash", None)
+            resolved = loaded_revision(model_config, embedding)
             if resolved != embedding["revision"]:
                 raise EmbeddingError("Loaded model revision does not match the pinned commit")
             tokenizer = self.model.tokenizer

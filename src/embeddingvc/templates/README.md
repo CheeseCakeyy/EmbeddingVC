@@ -8,7 +8,7 @@ This folder is managed by EmbeddingVC.
 2. Review `embeddingvc.yaml`, including the repository name, collection name,
    and immutable embedding model revision (currently unset).
 
-Install the optional embedding dependencies with `pip install -e ".[embeddings]"`
+Install the embedding and vector-store dependencies with `pip install -e ".[all]"`
 from the EmbeddingVC source checkout. Pin the model revision to a full
 40-character commit SHA, then prepare your collection:
 
@@ -20,8 +20,10 @@ embeddingvc status
 ```
 
 `embed` rescans tracked roots and reuses verified compatible vectors. It prepares
-the candidate index without committing or updating the database. Commit, log
-and checkout are future milestones. DOCX extraction is not yet supported.
+the candidate index without committing or updating the database. Then run
+`embeddingvc commit -m "<message>"`. `embeddingvc benchmark` measures
+regeneration strategies in isolated workspaces under `reports/benchmarks/`.
+DOCX extraction is not yet supported.
 
 ## Folder responsibilities
 
