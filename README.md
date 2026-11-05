@@ -233,7 +233,11 @@ includes through `.[all]`; on a minimal install, add it with
 /report
 ```
 
-Type `/` to list commands with autocomplete, and `/help` for the full list.
+The welcome block shows tips and a tree of recent commits, with branches forking
+from `main` and your position marked. Run `/tree` for the full tree at any time.
+
+Type `/` to list commands with autocomplete, and `/help` for the full list. Use
+the arrow keys to choose, Tab to fill a command in and Enter to run it.
 Every command calls the same code and takes the same options as the plain CLI,
 so `/benchmark --repeats 1 --scenarios edit-5pct` works as you would expect, and
 scripts can keep using `embeddingvc status` and the rest unchanged. A failed

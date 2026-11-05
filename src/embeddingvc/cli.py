@@ -105,7 +105,7 @@ def shell(parser: argparse.ArgumentParser) -> None:
     try:
         from .shell.app import run
     except ModuleNotFoundError as exc:
-        if exc.name not in ("rich", "prompt_toolkit"):
+        if (exc.name or "").split(".")[0] not in ("rich", "prompt_toolkit"):
             raise
         parser.exit(1, 'Error: The interactive shell needs the tui extra. Install it with: pip install -e ".[tui]"\n')
     if not (sys.stdin.isatty() and sys.stdout.isatty()):

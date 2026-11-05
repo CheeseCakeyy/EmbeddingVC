@@ -7,6 +7,36 @@ from ..object_store import reject_links, valid_digest
 LogError = RepositoryError
 
 
+def _branches(root: Path) -> dict[str, str]:
+    heads = root / ".embeddingvc/refs/heads"
+    reject_links(heads, root)
+    tips = {}
+    for ref in sorted(heads.iterdir()):
+        if ref.name == ".lock":
+            continue
+        value = revisions.read_text(root, ref)
+        if value and not valid_digest(value):
+            raise LogError(f"Invalid branch reference: {ref.name}")
+        tips[ref.name] = value
+    return tips
+
+
+def graph(directory: Path | str = ".") -> dict:
+    """Return every commit reachable from a branch or HEAD, for drawing the tree."""
+    root = find_repository(Path(directory))
+    branch, current = revisions.head(root)
+    tips = {name: value for name, value in _branches(root).items() if value}
+    ids = revisions.commit_ids(root)
+    commits = {}
+    for digest in [*tips.values(), current]:
+        while digest and digest not in commits:
+            value = revisions.manifest(root, digest)
+            commits[digest] = {"commit": digest, "short": revisions.short_id(digest, ids), "parent": value["parent"],
+                               "message": value["message"].splitlines()[0], "timestamp": value["timestamp"]}
+            digest = value["parent"]
+    return {"branch": branch, "head": current, "tips": tips, "commits": list(commits.values())}
+
+
 def history(directory: Path | str = ".", *, limit: int | None = None) -> list[dict]:
     """Return committed ancestry as structured entries, newest first."""
     if limit is not None and (type(limit) is not int or limit <= 0):
@@ -17,15 +47,8 @@ def history(directory: Path | str = ".", *, limit: int | None = None) -> list[di
         return []
     ids = revisions.commit_ids(root)
     decorations = {}
-    heads = root / ".embeddingvc/refs/heads"
-    reject_links(heads, root)
-    for ref in sorted(heads.iterdir()):
-        if ref.name == ".lock":
-            continue
-        value = revisions.read_text(root, ref)
-        if value and not valid_digest(value):
-            raise LogError(f"Invalid branch reference: {ref.name}")
-        decorations.setdefault(value, []).append(ref.name)
+    for name, value in _branches(root).items():
+        decorations.setdefault(value, []).append(name)
     entries, seen = [], set()
     while current is not None and (limit is None or len(seen) < limit):
         if current in seen:

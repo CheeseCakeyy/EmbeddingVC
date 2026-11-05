@@ -8,14 +8,16 @@ import shlex
 from dataclasses import dataclass
 from pathlib import Path
 
-from prompt_toolkit import PromptSession
+import getpass
+import time
+
 from prompt_toolkit.completion import Completer, Completion, PathCompleter
 from prompt_toolkit.document import Document
-from prompt_toolkit.styles import Style
 from rich.console import Console
-from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
+from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
 
 from . import views
+from .prompt import InputBox
 from .. import objects, revisions, staging_config
 from ..cli import ERRORS, build_parser
 from ..commands.add import add
@@ -28,20 +30,12 @@ from ..commands.config import set_ as config_set
 from ..commands.config import show as config_show
 from ..commands.diff import compare
 from ..commands.embed import embed
-from ..commands.log import history
+from ..commands.log import graph, history
 from ..commands.status import inspect
 from ..repository import initialize
 
 DEFAULT_LOG_LIMIT = 10
-PROMPT_STYLE = Style.from_dict({
-    "prompt": "ansicyan bold",
-    "bottom-toolbar": "noreverse ansigray",
-    "completion-menu": "bg:default",
-    "completion-menu.completion": "bg:default ansicyan",
-    "completion-menu.completion.current": "bg:ansicyan ansiblack",
-    "completion-menu.meta.completion": "bg:default ansigray",
-    "completion-menu.meta.completion.current": "bg:ansicyan ansiblack",
-})
+FRAMES_PER_SECOND = 8
 
 
 @dataclass(frozen=True)
@@ -57,6 +51,7 @@ COMMANDS = (
     Command("status", "/status", "Show changes and embedding readiness", "Workflow"),
     Command("embed", "/embed", "Generate only the embeddings that are missing", "Workflow"),
     Command("commit", "/commit <message>", "Save a snapshot and synchronize Chroma", "Workflow"),
+    Command("tree", "/tree", "Show every branch and where you are", "History"),
     Command("log", "/log [count]", "Show committed history", "History"),
     Command("diff", "/diff [old] [new]", "Compare snapshots (default HEAD~1 to HEAD)", "History"),
     Command("branch", "/branch [name] [start]", "List or create branches", "History"),
@@ -87,6 +82,13 @@ def repository_summary(directory: Path | str = ".") -> dict | None:
         model = None
     return {"name": root.name, "branch": name, "commit": commit_id, "model": model, "documents": len(documents),
             "chunks": sum(len(document.get("occurrences", [])) for document in documents.values())}
+
+
+def commit_graph(directory: Path | str = ".") -> dict | None:
+    try:
+        return graph(directory)
+    except (objects.RepositoryError, OSError):
+        return None
 
 
 def split_line(line: str) -> list[str]:
@@ -147,6 +149,13 @@ class SlashCompleter(Completer):
                     yield Completion(action, start_position=-len(word))
 
 
+class Working(Progress):
+    """Live progress with the owl animated beside it."""
+
+    def get_renderables(self):
+        yield views.working(int(time.monotonic() * FRAMES_PER_SECOND), self.make_tasks_table(self.tasks))
+
+
 class Shell:
     def __init__(self, console: Console | None = None):
         self.console = console or Console(theme=views.THEME)
@@ -154,8 +163,12 @@ class Shell:
         self.running = True
 
     def welcome(self) -> None:
-        self.console.print(views.welcome(repository_summary()))
-        self.console.print(" Type [accent]/[/accent] to see commands\n", style="muted")
+        try:
+            user = getpass.getuser().split()[0]
+        except (OSError, KeyError, ImportError, IndexError):
+            user = ""
+        self.console.print(views.welcome(repository_summary(), commit_graph(), user=user, path=str(Path.cwd()),
+                                         width=self.console.width))
 
     def execute(self, line: str) -> None:
         """Run one input line; failures are shown and the shell keeps going."""
@@ -183,7 +196,7 @@ class Shell:
             self.console.print(views.failure(f"{type(exc).__name__}: {exc}"))
 
     def parsed(self, name: str, tokens: list[str]) -> tuple:
-        if name in ("report", "help", "clear", "exit"):
+        if name in ("report", "tree", "help", "clear", "exit"):
             return ()
         output = io.StringIO()
         try:
@@ -198,8 +211,15 @@ class Shell:
             return (None,)
 
     def progress(self) -> Progress:
-        return Progress(SpinnerColumn(), TextColumn("{task.description}"), BarColumn(), TextColumn("{task.fields[count]}"),
-                        TimeElapsedColumn(), console=self.console, transient=True)
+        bar = BarColumn(bar_width=24, style="muted", complete_style="orange", finished_style="orange", pulse_style="orange")
+        return Working(TextColumn("[chalk]{task.description}"), bar, TextColumn("[muted]{task.fields[count]}"),
+                       TimeElapsedColumn(), console=self.console, transient=True, refresh_per_second=FRAMES_PER_SECOND)
+
+    @contextlib.contextmanager
+    def busy(self, description: str):
+        with self.progress() as progress:
+            progress.add_task(description, total=None, count="")
+            yield
 
     def run_help(self) -> None:
         self.console.print(views.help_table(COMMANDS))
@@ -218,13 +238,13 @@ class Shell:
 
     def run_add(self, args) -> None:
         if args:
-            with self.console.status("Staging documents"):
+            with self.console.status("Staging documents", spinner_style="orange"):
                 result = add(args.paths)
             self.console.print(views.message(result.render(), title="Staged"))
 
     def run_status(self, args) -> None:
         if args:
-            with self.console.status("Comparing sources with the last snapshot"):
+            with self.console.status("Comparing sources with the last snapshot", spinner_style="orange"):
                 report = inspect()
             self.console.print(views.status(report))
 
@@ -242,9 +262,12 @@ class Shell:
 
     def run_commit(self, args) -> None:
         if args:
-            with self.console.status("Saving snapshot and synchronizing Chroma"):
+            with self.busy("Saving snapshot and synchronizing Chroma"):
                 result = commit(message=args.message)
             self.console.print(views.message(result.render(), title="Committed"))
+
+    def run_tree(self) -> None:
+        self.console.print(views.tree_panel(graph()))
 
     def run_log(self, args) -> None:
         if args:
@@ -252,7 +275,7 @@ class Shell:
 
     def run_diff(self, args) -> None:
         if args:
-            with self.console.status("Comparing snapshots"):
+            with self.console.status("Comparing snapshots", spinner_style="orange"):
                 result = compare(args.old, args.new)
             self.console.print(views.difference(result))
 
@@ -262,7 +285,7 @@ class Shell:
 
     def run_checkout(self, args) -> None:
         if args:
-            with self.console.status(f"Restoring {args.revision}"):
+            with self.busy(f"Restoring {args.revision}"):
                 result = checkout(args.revision, force=args.force)
             self.console.print(views.message(result.render(), title="Checked out"))
 
@@ -296,13 +319,13 @@ class Shell:
                                keep_workspaces=args.keep_workspaces, warmup=args.warmup, progress=report)
         self.show_report(result.directory)
         if result.failures or result.skipped:
-            self.console.print(views.message(result.render(), style="yellow", title="Notes"))
+            self.console.print(views.message(result.render(), style="warn", title="Notes"))
 
     def run_report(self) -> None:
         root = objects.find_repository(Path("."))
         runs = sorted(path.parent for path in (root / "reports/benchmarks").glob("*/raw_results.json"))
         if not runs:
-            self.console.print(views.message("No benchmark results yet.\nRun /benchmark first.", style="yellow", title="Benchmark"))
+            self.console.print(views.message("No benchmark results yet.\nRun /benchmark first.", style="warn", title="Benchmark"))
             return
         self.show_report(runs[-1])
 
@@ -315,15 +338,13 @@ class Shell:
 def run() -> None:
     shell = Shell()
     shell.welcome()
-    session = PromptSession(completer=SlashCompleter(), complete_while_typing=True, style=PROMPT_STYLE,
-                            reserve_space_for_menu=8)
+    box = InputBox(SlashCompleter(), {"/" + command.name for command in COMMANDS if "<" in command.usage})
     while shell.running:
-        status_line = views.toolbar(repository_summary())
         try:
-            line = session.prompt([("class:prompt", "❯ ")], bottom_toolbar=status_line)
-        except KeyboardInterrupt:
-            continue
+            line = box.read(views.toolbar(repository_summary()))
         except EOFError:
             break
-        shell.execute(line)
-        shell.console.print()
+        if line.strip():
+            shell.console.print(views.echo(line))
+            shell.execute(line)
+            shell.console.print()

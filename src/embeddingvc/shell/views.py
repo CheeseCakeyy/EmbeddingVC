@@ -2,21 +2,31 @@
 import re
 from statistics import fmean
 
+from rich import box
+from rich.align import Align
 from rich.console import Group
 from rich.padding import Padding
 from rich.panel import Panel
+from rich.rule import Rule
 from rich.table import Table
 from rich.text import Text
 from rich.theme import Theme
 
+from . import mascot, tree
 from .. import __version__
 from ..benchmarks.runner import STRATEGIES
 
-# ANSI names follow the terminal's own palette, so views stay readable on any theme.
-THEME = Theme({"accent": "bold cyan", "muted": "dim", "good": "green", "warn": "yellow", "bad": "red",
-               "added": "green", "modified": "yellow", "deleted": "red", "stale": "magenta", "unchanged": "dim",
-               "metadata_changed": "blue"})
-MARK = ("█▀▀ █ █ █▀▀", "█▀▀ ▀▄▀ █  ", "▀▀▀  ▀  ▀▀▀")
+# Chalk pastels carry the information; orange marks what matters. Written for a dark terminal.
+ORANGE, GRAY, WHITE = "#d97757", "#9c978c", "#efeadf"
+MINT, SKY, BUTTER, ROSE, LILAC = "#a8d8b9", "#a7c7e7", "#f3dfa2", "#eba6a9", "#c9b6e4"
+THEME = Theme({"accent": f"bold {ORANGE}", "orange": ORANGE, "muted": GRAY, "chalk": WHITE, "good": MINT, "warn": BUTTER,
+               "bad": ROSE, "added": MINT, "modified": BUTTER, "deleted": ROSE, "stale": LILAC, "unchanged": GRAY,
+               "metadata_changed": SKY, "sha": BUTTER})
+LANES = (SKY, MINT, LILAC, ROSE, BUTTER)
+LEFT_COLUMN = 34
+SINGLE_COLUMN_BELOW = 84
+WELCOME_TREE_ROWS = 5
+TREE_ROWS = 30
 BAR_WIDTH = 28
 DRIFT_ROWS = 8
 STRATEGY_LABELS = {"full": "full", "document": "document", "chunk": "chunk (EmbeddingVC)"}
@@ -43,31 +53,101 @@ def share_bar(part: float, whole: float, *, style: str = "good", width: int = BA
     return Text.assemble(("█" * filled, style), ("░" * (width - filled), "muted"))
 
 
+def emphasize(text: Text) -> Text:
+    """Pick out slash commands and commit ids wherever they appear in prose."""
+    text.highlight_regex(r"(?<![\w/\\.])/[a-z]+\b", "accent")
+    text.highlight_regex(r"\b(?=[a-f]*\d)[0-9a-f]{7,12}\b", "sha")
+    return text
+
+
 def _title(text: str) -> Text:
     return Text(text, style="accent")
 
 
-def _panel(body, title: str, *, style: str = "cyan") -> Panel:
+def _panel(body, title: str, *, style: str = "orange") -> Panel:
     return Panel(body, title=f"[bold]{title}[/bold]", title_align="left", border_style=style, padding=(1, 2))
 
 
-def welcome(repository: dict | None) -> Panel:
-    grid = Table.grid(padding=(0, 3))
-    grid.add_column(style="accent", no_wrap=True)
-    grid.add_column()
+def tree_lines(graph: dict | None, limit: int | None = None) -> list[Text]:
+    """One line per commit, drawn so branches visibly fork from where they started."""
+    if not graph or not graph["commits"]:
+        return [Text("No commits yet", style="muted")]
+    labels = {}
+    for name, digest in graph["tips"].items():
+        labels.setdefault(digest, []).append(name)
+    lines = []
+    for row in tree.rows(graph, limit):
+        line = Text(no_wrap=True, overflow="ellipsis")
+        entry = row.commit
+        current = bool(entry) and entry["commit"] == graph["head"]
+        for cell, lane in row.cells:
+            node = current and cell.startswith("●")
+            line.append(cell, "accent" if node else LANES[lane % len(LANES)])
+        if not entry:
+            line.append(f"{row.hidden} older commit{'s' if row.hidden != 1 else ''}" if row.hidden else "", "muted")
+            lines.append(line)
+            continue
+        line.append(entry["short"], "sha")
+        for name in labels.get(entry["commit"], []):
+            line.append(f" {name}", "accent" if current and name == graph["branch"] else "bold")
+        if current:
+            line.append(" ◀ you are here" if graph["branch"] else " ◀ you are here (detached)", "orange")
+        line.append(f"  {entry['message']}", "muted")
+        lines.append(line)
+    return lines
+
+
+def tree_panel(graph: dict) -> Panel:
+    return _panel(Group(*tree_lines(graph, TREE_ROWS)), "Tree")
+
+
+def _tips(repository: dict | None) -> list[str]:
+    if not repository:
+        return ["Run /init to create a repository here", "Then put documents in data/ and run /add data",
+                "Type / to see every command"]
+    if not repository["commit"]:
+        return ["Run /add data to track your documents", "Run /embed to generate their embeddings",
+                "Run /commit <message> to save your first snapshot"]
+    return ["Run /status to see what changed since the last snapshot", "Run /embed to generate only what is missing",
+            "Run /tree for every branch, /report for benchmark results"]
+
+
+def _shortened(path: str, width: int) -> str:
+    return path if len(path) <= width else "…" + path[-(width - 1):]
+
+
+def welcome(repository: dict | None, graph: dict | None, *, user: str, path: str, width: int) -> Panel:
     if repository:
-        head = f"{repository['branch'] or 'detached'} · {repository['commit'][:7] if repository['commit'] else 'no commits yet'}"
-        lines = [Text("Version control for embeddings", style="bold"),
-                 Text.assemble((f"{repository['name']}", "bold"), ("  " + head, "muted")),
-                 Text(repository["model"] or "no embedding model configured", style="muted")]
+        head = repository["branch"] or "detached"
+        summary = Text(f"{repository['model'] or 'no model configured'} · {head}", style="muted", no_wrap=True, overflow="ellipsis")
     else:
-        lines = [Text("Version control for embeddings", style="bold"),
-                 Text("No repository in this folder", style="warn"),
-                 Text("Run /init to create one", style="muted")]
-    for mark, line in zip(MARK, lines):
-        grid.add_row(mark, line)
-    return Panel(grid, title=f"[bold]EmbeddingVC[/bold] [dim]v{__version__}[/dim]", title_align="left",
-                 border_style="cyan", padding=(1, 2))
+        summary = Text("No repository in this folder", style="warn")
+    greeting = Text(f"Welcome back {user}!" if user else "Welcome back!", style="bold", no_wrap=True, overflow="ellipsis")
+    location = Text(_shortened(path, LEFT_COLUMN - 2), style="muted", no_wrap=True)
+    left = Group(*[Align.center(part) for part in (greeting, Text(" "), mascot.still(), Text(" "), summary, location)])
+    right = Group(_title("Tips for getting started"), *[emphasize(Text(tip, no_wrap=True, overflow="ellipsis"))
+                                                       for tip in _tips(repository)],
+                  Rule(style="orange"), _title("Recent activity"), *tree_lines(graph, WELCOME_TREE_ROWS))
+    if width < SINGLE_COLUMN_BELOW:
+        body = Group(left, Text(""), right)
+    else:
+        body = Table(box=box.MINIMAL, show_header=False, show_edge=False, pad_edge=False, expand=True, border_style="orange")
+        body.add_column(width=LEFT_COLUMN)
+        body.add_column(ratio=1)
+        body.add_row(left, right)
+    return Panel(body, title=f"[accent]EmbeddingVC[/accent] [orange]v{__version__}[/orange]", title_align="left",
+                 border_style="orange", padding=(0, 1))
+
+
+def working(frame: int, progress) -> Padding:
+    """The owl at work beside the live progress; redrawn by the shell's Progress."""
+    grid = Table.grid(padding=(0, 3))
+    grid.add_row(mascot.working(frame), Group(Text(""), mascot.chunks(frame), Text(""), progress))
+    return Padding(grid, (1, 0, 0, 2))
+
+
+def echo(line: str) -> Text:
+    return Text.assemble(("> ", "accent"), (line, "chalk"))
 
 
 def toolbar(repository: dict | None) -> str:
@@ -93,12 +173,13 @@ def help_table(commands) -> Group:
 
 def message(text: str, *, style: str = "good", title: str = "Done") -> Panel:
     lines = shell_text(text).splitlines() or [""]
-    return _panel(Text("\n").join([Text(lines[0], style="bold"), *[Text(line, style="muted") for line in lines[1:]]]),
-                  title, style=style)
+    body = Text("\n").join([Text(lines[0], style="bold"), *[Text(line, style="muted") for line in lines[1:]]])
+    return _panel(emphasize(body), title, style=style)
 
 
 def failure(text: str) -> Panel:
-    return Panel(Text(shell_text(text)), title="[bold]Error[/bold]", title_align="left", border_style="red", padding=(0, 2))
+    return Panel(emphasize(Text(shell_text(text))), title="[bold]Error[/bold]", title_align="left", border_style="bad",
+                 padding=(0, 2))
 
 
 def _counts(rows: dict[str, dict[str, int]]) -> Table:
@@ -177,10 +258,10 @@ def history(entries: list[dict]) -> Panel:
         return _panel(Text("No commits yet. Run /add, /embed, then /commit.", style="muted"), "History")
     lines = []
     for position, entry in enumerate(entries):
-        head = Text.assemble(("● ", "accent"), (entry["short"], "warn"))
+        head = Text.assemble(("● ", "accent"), (entry["short"], "sha"))
         for label in entry["labels"]:
             head.append("  ")
-            head.append(f" {label} ", style="bold black on cyan" if label.startswith("HEAD") else "bold black on green")
+            head.append(f" {label} ", style=f"bold #1f1d1a on {ORANGE if label.startswith('HEAD') else MINT}")
         subject = entry["message"].splitlines()[0]
         older = entries[position + 1] if position + 1 < len(entries) else None
         lines += [head, Text.assemble(("│ ", "accent"), (subject, "bold")),
@@ -265,7 +346,7 @@ def benchmark_rows(results: dict) -> dict[str, list[dict]]:
 def benchmark(results: dict, settings: dict) -> Panel:
     rows = benchmark_rows(results)
     if not rows:
-        return _panel(Text("This run has no completed scenarios.", style="warn"), "Benchmark", style="yellow")
+        return _panel(Text("This run has no completed scenarios.", style="warn"), "Benchmark", style="warn")
     parts = [_title(f"Run {results['run_id']}"),
              Text(f"{settings.get('documents', '?')} synthetic documents · seed {settings.get('seed', '?')} · "
                   f"{settings.get('repeats', '?')} repeat(s) · values are means", style="muted"),

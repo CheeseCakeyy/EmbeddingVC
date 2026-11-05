@@ -14,7 +14,7 @@ from embeddingvc.commands.add import add
 from embeddingvc.commands.commit import commit
 from embeddingvc.commands.config import set_
 from embeddingvc.commands.embed import embed
-from embeddingvc.commands.log import history, log
+from embeddingvc.commands.log import graph, history, log
 from embeddingvc.repository import initialize
 from history_fixtures import snapshot, state
 from test_commit import Encoder, Store
@@ -25,8 +25,10 @@ try:
     from prompt_toolkit.input import create_pipe_input
     from prompt_toolkit.output import DummyOutput
     from rich.console import Console
-    from embeddingvc.shell import app as shell_app, views
+    from rich.text import Text
+    from embeddingvc.shell import app as shell_app, mascot, tree, views
     from embeddingvc.shell.app import COMMANDS, Shell, SlashCompleter, arguments_for, repository_summary, split_line
+    from embeddingvc.shell.prompt import InputBox
 except ModuleNotFoundError:
     Console = None
 
@@ -249,6 +251,141 @@ class PromptLoop(unittest.TestCase):
         self.assertIn("/commit <message>", self.typed("half typed\x03/help\r\x04"))
 
 
+class InputKeys(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        if Console is None:
+            raise unittest.SkipTest("tui extra is not installed")
+
+    def lines(self, keys, count=1):
+        with create_pipe_input() as pipe, create_app_session(input=pipe, output=DummyOutput()):
+            box = InputBox(SlashCompleter(), {"/commit", "/add", "/checkout"})
+            pipe.send_text(keys)
+            return [box.read("status") for _ in range(count)]
+
+    def test_enter_runs_the_highlighted_command(self):
+        self.assertEqual(self.lines("/sta\r"), ["/status"])
+        self.assertEqual(self.lines("/\x1b[B\r"), ["/" + COMMANDS[1].name])
+
+    def test_enter_waits_for_a_required_argument(self):
+        self.assertEqual(self.lines("/com\rfix typo\r"), ["/commit fix typo"])
+
+    def test_tab_fills_without_running(self):
+        self.assertEqual(self.lines("/sta\t\r"), ["/status "])
+
+    def test_arguments_are_only_completed_on_request(self):
+        self.assertEqual(self.lines("/checkout \r"), ["/checkout "])
+        self.assertEqual(self.lines("/checkout \t\r"), ["/checkout HEAD"])
+
+    def test_plain_words_and_history(self):
+        self.assertEqual(self.lines("/help\r\x1b[A\r", 2), ["/help", "/help"])
+        self.assertEqual(self.lines("anything at all\r"), ["anything at all"])
+
+    def test_ctrl_d_only_leaves_an_empty_box(self):
+        with self.assertRaises(EOFError):
+            self.lines("\x04")
+        self.assertEqual(self.lines("ab\x04\r"), ["ab"])
+
+
+class CommitTree(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        if Console is None:
+            raise unittest.SkipTest("tui extra is not installed")
+
+    @staticmethod
+    def commit(name, parent, minute):
+        return {"commit": name, "short": name, "parent": parent, "message": f"message {name}",
+                "timestamp": f"2026-10-01T00:{minute:02}:00+00:00"}
+
+    def drawn(self, graph, limit=None):
+        return ["".join(text for text, _ in row.cells) for row in tree.rows(graph, limit)]
+
+    def test_branches_fork_from_main_on_the_first_lane(self):
+        graph = {"branch": "main", "head": "m", "tips": {"main": "m", "exp": "e"},
+                 "commits": [self.commit("m", "r", 1), self.commit("e", "r", 2), self.commit("r", None, 0)]}
+        self.assertEqual(self.drawn(graph), ["│ ● ", "● │ ", "├─╯ ", "● "])
+
+    def test_three_branches_join_at_one_commit(self):
+        graph = {"branch": "main", "head": "m", "tips": {"main": "m", "a": "a", "b": "b"},
+                 "commits": [self.commit("m", "r", 3), self.commit("a", "r", 2), self.commit("b", "r", 1),
+                             self.commit("r", None, 0)]}
+        self.assertEqual(self.drawn(graph), ["● ", "│ ● ", "│ │ ● ", "├─┴─╯ ", "● "])
+
+    def test_parents_follow_children_even_with_equal_timestamps(self):
+        graph = {"commits": [self.commit("r", None, 0), self.commit("m", "r", 0)], "tips": {"main": "m"}}
+        self.assertEqual([entry["commit"] for entry in tree.ordered(graph)], ["m", "r"])
+
+    def test_limit_reports_what_is_hidden(self):
+        graph = {"branch": "main", "head": "c", "tips": {"main": "c"},
+                 "commits": [self.commit("c", "b", 2), self.commit("b", "a", 1), self.commit("a", None, 0)]}
+        self.assertEqual(self.drawn(graph, 2)[-1], "┆ ")
+        self.assertEqual(tree.rows(graph, 2)[-1].hidden, 1)
+        self.assertEqual(views.tree_lines(graph, 2)[-1].plain, "┆ 1 older commit")
+        self.assertEqual(len(views.tree_lines(graph, 3)), 3)
+
+    def test_current_commit_is_marked(self):
+        graph = {"branch": "main", "head": "c", "tips": {"main": "c"}, "commits": [self.commit("c", None, 0)]}
+        self.assertIn("you are here", views.tree_lines(graph)[0].plain)
+        graph["branch"] = None
+        self.assertIn("detached", views.tree_lines(graph)[0].plain)
+
+    def test_real_repository_with_branch_and_detached_head(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = initialize(Path(temp) / "repo")
+            self.assertEqual(graph(root)["commits"], [])
+            first, _ = snapshot(root, message="one")
+            second, _ = snapshot(root, parent=first, message="two")
+            (root / ".embeddingvc/refs/heads/main").write_text(first)
+            (root / ".embeddingvc/refs/heads/exp").write_text(second)
+            (root / ".embeddingvc/HEAD").write_text(first)
+            before = state(root)
+            data = graph(root)
+            self.assertEqual({entry["message"] for entry in data["commits"]}, {"one", "two"})
+            self.assertEqual((data["branch"], data["head"], data["tips"]), (None, first, {"exp": second, "main": first}))
+            self.assertEqual(state(root), before)
+
+
+class Welcome(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        if Console is None:
+            raise unittest.SkipTest("tui extra is not installed")
+
+    def rendered(self, width, repository=None, graph_data=None):
+        output = io.StringIO()
+        console = Console(file=output, width=width, theme=views.THEME)
+        console.print(views.welcome(repository, graph_data, user="Sam", path="C:\\" + "deep\\" * 30 + "repo", width=width))
+        return output.getvalue()
+
+    def test_outside_a_repository_points_at_init(self):
+        text = self.rendered(110)
+        for expected in ("Welcome back Sam!", "Tips for getting started", "Run /init", "Recent activity", "No commits yet"):
+            self.assertIn(expected, text)
+        self.assertIn("repo", text)
+
+    def test_two_panes_fold_into_one_when_narrow(self):
+        repository = {"branch": "main", "commit": "a" * 64, "model": "m", "documents": 1, "chunks": 1}
+        data = {"branch": "main", "head": "a", "tips": {"main": "a"},
+                "commits": [{"commit": "a", "short": "abc1234", "parent": None, "message": "first", "timestamp": "2026"}]}
+        for width in (120, 84, 70):
+            text = self.rendered(width, repository, data)
+            self.assertIn("abc1234", text)
+            self.assertTrue(all(len(line) <= width for line in text.splitlines()), width)
+
+    def test_every_owl_frame_has_the_same_shape(self):
+        stills = [mascot.still(eyes).plain.splitlines() for eyes in mascot.EYES]
+        moving = [mascot.working(frame).plain.splitlines() for frame in range(len(mascot.WORK_CYCLE))]
+        self.assertEqual({(len(rows), len(rows[0])) for rows in stills}, {(6, 14)})
+        self.assertEqual({(len(rows), len(rows[0])) for rows in moving}, {(7, 14)})
+        self.assertGreater(len({"".join(rows) for rows in moving}), 1)
+
+    def test_emphasis_leaves_paths_alone(self):
+        text = views.emphasize(Text("Run /embed in reports/benchmarks/ for abc1234f"))
+        marked = {text.plain[span.start:span.end] for span in text.spans}
+        self.assertEqual(marked, {"/embed", "abc1234f"})
+
+
 class Entry(unittest.TestCase):
     def test_no_arguments_outside_a_terminal_stays_a_usage_error(self):
         with patch.object(sys, "argv", ["embeddingvc"]), contextlib.redirect_stderr(io.StringIO()), \
@@ -266,7 +403,8 @@ class Entry(unittest.TestCase):
     def test_missing_extra_names_the_install_command(self):
         stderr = io.StringIO()
         with patch.dict(sys.modules, {"prompt_toolkit": None}), contextlib.redirect_stderr(stderr):
-            sys.modules.pop("embeddingvc.shell.app", None)
+            for name in [name for name in sys.modules if name.startswith(("prompt_toolkit.", "embeddingvc.shell."))]:
+                del sys.modules[name]
             with self.assertRaises(SystemExit):
                 app(["shell"])
         self.assertIn("tui", stderr.getvalue())
