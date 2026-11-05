@@ -355,6 +355,11 @@ class CommitTree(unittest.TestCase):
         graph["branch"] = None
         self.assertIn("detached", views.tree_lines(graph)[0].plain)
 
+    def test_compact_lines_drop_the_id_and_shorten_the_marker(self):
+        graph = {"branch": "main", "head": "c", "tips": {"main": "c"}, "commits": [self.commit("c", None, 0)]}
+        self.assertEqual(views.tree_lines(graph, compact=True)[0].plain, "● main ◀ here  message c")
+        self.assertEqual(views.tree_lines(graph)[0].plain, "● c main ◀ you are here  message c")
+
     def test_real_repository_with_branch_and_detached_head(self):
         with tempfile.TemporaryDirectory() as temp:
             root = initialize(Path(temp) / "repo")
@@ -380,12 +385,12 @@ class Welcome(unittest.TestCase):
     def rendered(self, width, repository=None, graph_data=None):
         output = io.StringIO()
         console = Console(file=output, width=width, theme=views.THEME)
-        console.print(views.welcome(repository, graph_data, user="Sam", path="C:\\" + "deep\\" * 30 + "repo", width=width))
+        console.print(views.welcome(repository, graph_data, path="C:\\" + "deep\\" * 30 + "repo", width=width))
         return output.getvalue()
 
     def test_outside_a_repository_points_at_init(self):
         text = self.rendered(110)
-        for expected in ("Welcome back Sam!", "Tips for getting started", "Run /init", "Recent activity", "No commits yet"):
+        for expected in ("Welcome back!", "Tips for getting started", "/init", "Recent activity", "No commits yet"):
             self.assertIn(expected, text)
         self.assertIn("repo", text)
 
@@ -395,7 +400,8 @@ class Welcome(unittest.TestCase):
                 "commits": [{"commit": "a", "short": "abc1234", "parent": None, "message": "first", "timestamp": "2026"}]}
         for width in (120, 84, 70):
             text = self.rendered(width, repository, data)
-            self.assertIn("abc1234", text)
+            self.assertIn("first", text)
+            self.assertNotIn("abc1234", text)  # Commit ids stay in /tree; the home screen is for a glance.
             self.assertTrue(all(len(line) <= width for line in text.splitlines()), width)
 
     def test_mascot_frames_are_complete_and_fit(self):
@@ -409,7 +415,7 @@ class Welcome(unittest.TestCase):
         self.assertEqual({len(text.splitlines()) for text in drawn}, {len(sprites.FRAMES[0]) // 2})
         self.assertEqual(len({len(line) for text in drawn for line in text.splitlines()}), 1)
         self.assertEqual(mascot.draw(len(sprites.FRAMES)).plain, drawn[0])
-        self.assertLessEqual(max(map(len, mascot.draw().plain.splitlines())) + 2, views.LEFT_COLUMN)
+        self.assertLessEqual(max(map(len, mascot.draw().plain.splitlines())), views.LEFT_COLUMN)
 
     def test_progress_sits_beside_the_octopus(self):
         output = io.StringIO()

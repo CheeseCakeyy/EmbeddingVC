@@ -9,7 +9,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import functools
-import getpass
 import time
 
 from prompt_toolkit.completion import Completer, Completion, PathCompleter
@@ -167,7 +166,7 @@ class Shell:
         self.greeting = True
 
     def welcome_view(self, width: int, frame: int = 0):
-        return views.welcome(*self.facts, user=self.user, path=str(Path.cwd()), width=width, frame=frame)
+        return views.welcome(*self.facts, path=str(Path.cwd()), width=width, frame=frame)
 
     def rendered(self, width: int) -> tuple[ANSI, ...]:
         """Every frame of the welcome block, as text the input box can redraw."""
@@ -184,10 +183,6 @@ class Shell:
         if not self.greeting:
             return None
         self.greeting = False
-        try:
-            self.user = getpass.getuser().split()[0]
-        except (OSError, KeyError, ImportError, IndexError):
-            self.user = ""
         self.facts = (repository_summary(), commit_graph())
         with self.console.capture() as capture:
             self.console.print(self.welcome_view(self.console.width))

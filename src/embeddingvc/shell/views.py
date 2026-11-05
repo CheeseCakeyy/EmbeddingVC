@@ -7,7 +7,6 @@ from rich.align import Align
 from rich.console import Group
 from rich.padding import Padding
 from rich.panel import Panel
-from rich.rule import Rule
 from rich.table import Table
 from rich.text import Text
 from rich.theme import Theme
@@ -25,7 +24,8 @@ THEME = Theme({"accent": f"bold {ORANGE}", "orange": ORANGE, "muted": GRAY, "cha
 LANES = (SKY, MINT, LILAC, ROSE, BUTTER)
 LEFT_COLUMN = 35
 SINGLE_COLUMN_BELOW = 84
-WELCOME_TREE_ROWS = 12
+WELCOME_TREE_ROWS = 4
+TIP_WIDTH = 12
 TREE_ROWS = 30
 BAR_WIDTH = 28
 DRIFT_ROWS = 8
@@ -68,8 +68,8 @@ def _panel(body, title: str, *, style: str = "orange") -> Panel:
     return Panel(body, title=f"[bold]{title}[/bold]", title_align="left", border_style=style, padding=(1, 2))
 
 
-def tree_lines(graph: dict | None, limit: int | None = None) -> list[Text]:
-    """One line per commit, drawn so branches visibly fork from where they started."""
+def tree_lines(graph: dict | None, limit: int | None = None, *, compact: bool = False) -> list[Text]:
+    """One line per commit, drawn so branches visibly fork; compact keeps only what a glance needs."""
     if not graph or not graph["commits"]:
         return [Text("No commits yet", style="muted")]
     labels = {}
@@ -87,12 +87,14 @@ def tree_lines(graph: dict | None, limit: int | None = None) -> list[Text]:
             line.append(f"{row.hidden} older commit{'s' if row.hidden != 1 else ''}" if row.hidden else "", "muted")
             lines.append(line)
             continue
-        line.append(entry["short"], "sha")
+        if not compact:
+            line.append(entry["short"] + " ", "sha")
         for name in labels.get(entry["commit"], []):
-            line.append(f" {name}", "accent" if current and name == graph["branch"] else "bold")
+            line.append(f"{name} ", "accent" if current and name == graph["branch"] else "bold")
         if current:
-            line.append(" ◀ you are here" if graph["branch"] else " ◀ you are here (detached)", "orange")
-        line.append(f"  {entry['message']}", "muted")
+            where = "here" if compact else "you are here"
+            line.append(f"◀ {where} " if graph["branch"] else f"◀ {where} (detached) ", "orange")
+        line.append(f" {entry['message']}", "muted")
         lines.append(line)
     return lines
 
@@ -101,39 +103,36 @@ def tree_panel(graph: dict) -> Panel:
     return _panel(Group(*tree_lines(graph, TREE_ROWS)), "Tree")
 
 
-def _tips(repository: dict | None) -> list[str]:
+def _tips(repository: dict | None) -> list[tuple[str, str]]:
     if not repository:
-        return ["Run /init to create a repository here", "Then put documents in data/ and run /add data",
-                "Type / to see every command"]
+        return [("/init", "create a repository"), ("/help", "see every command")]
     if not repository["commit"]:
-        return ["Run /add data to track your documents", "Run /embed to generate their embeddings",
-                "Run /commit <message> to save your first snapshot"]
-    return ["Run /status to see what changed since the last snapshot", "Run /embed to generate only what is missing",
-            "Run /tree for every branch, /report for benchmark results"]
+        return [("/add data", "track your documents"), ("/embed", "create embeddings")]
+    return [("/status", "see what changed"), ("/tree", "see every branch")]
 
 
 def _shortened(path: str, width: int) -> str:
     return path if len(path) <= width else "…" + path[-(width - 1):]
 
 
-def welcome(repository: dict | None, graph: dict | None, *, user: str, path: str, width: int, frame: int = 0) -> Panel:
+def welcome(repository: dict | None, graph: dict | None, *, path: str, width: int, frame: int = 0) -> Panel:
     if repository:
         head = repository["branch"] or "detached"
         summary = Text(f"{repository['model'] or 'no model configured'} · {head}", style="muted", no_wrap=True, overflow="ellipsis")
     else:
         summary = Text("No repository in this folder", style="warn")
-    greeting = Text(f"Welcome back {user}!" if user else "Welcome back!", style="bold", no_wrap=True, overflow="ellipsis")
+    greeting = Text("Welcome back!", style="bold")
     location = Text(_shortened(path, LEFT_COLUMN - 2), style="muted", no_wrap=True)
     left = Group(*[Align.center(part) for part in (greeting, Text(" "), mascot.draw(frame), Text(" "), summary, location)])
-    right = Group(_title("Tips for getting started"), *[emphasize(Text(tip, no_wrap=True, overflow="ellipsis"))
-                                                       for tip in _tips(repository)],
-                  Rule(style="orange"), _title("Recent activity"), *tree_lines(graph, WELCOME_TREE_ROWS))
+    right = Group(_title("Tips for getting started"),
+                  *[Text.assemble((command.ljust(TIP_WIDTH), "accent"), (note, "muted")) for command, note in _tips(repository)],
+                  Text(" "), _title("Recent activity"), *tree_lines(graph, WELCOME_TREE_ROWS, compact=True))
     if width < SINGLE_COLUMN_BELOW:
         body = Group(left, Text(""), right)
     else:
         body = Table(box=box.MINIMAL, show_header=False, show_edge=False, pad_edge=False, expand=True, border_style="orange")
         body.add_column(width=LEFT_COLUMN)
-        body.add_column(ratio=1)
+        body.add_column(ratio=1, vertical="middle")
         body.add_row(left, right)
     return Panel(body, title=f"[accent]EmbeddingVC[/accent] [orange]v{__version__}[/orange]", title_align="left",
                  border_style="orange", padding=(0, 1))
