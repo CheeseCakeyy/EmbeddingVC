@@ -67,22 +67,24 @@ def _validate_index(index):
                 raise EmbedError(f"Invalid chunk occurrence: {name}")
 
 
-def embed(directory: Path | str = ".", *, encoder_factory=None) -> Result:
+def embed(directory: Path | str = ".", *, encoder_factory=None, progress=None) -> Result:
     """Generate once per compatible unique chunk, retaining historical objects.
 
     encoder_factory is a test seam; CLI callers always use Sentence Transformers.
+    progress, when given, receives (stage, done, total); total 0 means unknown.
     """
     started = time.perf_counter()
     try:
         root = objects.find_repository(Path(directory))
         with repository_lock(root):
-            return _embed(root, started, encoder_factory or SentenceTransformerEncoder)
+            return _embed(root, started, encoder_factory or SentenceTransformerEncoder,
+                          progress or (lambda stage, done, total: None))
     except (objects.RepositoryError, config.ConfigurationError, staging_config.ConfigError,
             AddError, DocumentError, EmbeddingError, OSError, ValueError, TypeError) as exc:
         raise EmbedError(str(exc)) from exc
 
 
-def _embed(root, started, encoder_factory):
+def _embed(root, started, encoder_factory, progress):
     index_path = objects.index_path(root)
     reject_links(index_path, root)
     previous_bytes = index_path.read_bytes()
@@ -113,6 +115,7 @@ def _embed(root, started, encoder_factory):
         entry["config"] = staging_hash
         candidate["documents"][relative] = entry
 
+    progress("Loading model", 0, 0)
     encoder = encoder_factory(settings.embedding)
     expected = settings.embedding.get("dimension")
     dimension = encoder.dimension
@@ -146,6 +149,7 @@ def _embed(root, started, encoder_factory):
     pending = sorted(digest for digest in chunks if digest not in reusable)
     resolved = dict(reusable)
     batch_size = settings.embedding["batch_size"]
+    progress("Embedding chunks", 0, len(pending))
     for offset in range(0, len(pending), batch_size):
         batch = pending[offset:offset + batch_size]
         vectors = encode_batch(encoder, [chunks[digest] for digest in batch], batch_size=batch_size,
@@ -155,6 +159,7 @@ def _embed(root, started, encoder_factory):
                 "schema": 1, "chunk_hash": digest, "embedding_config_hash": config_hash,
                 "vector": vector, "dimension": dimension, "provenance": provenance,
             })
+        progress("Embedding chunks", min(offset + batch_size, len(pending)), len(pending))
 
     count = reused = 0
     assigned_new = set()

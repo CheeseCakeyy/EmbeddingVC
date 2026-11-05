@@ -81,14 +81,18 @@ def _baseline(root):
 
 
 def status(directory: Path | str = ".") -> str:
+    return render(inspect(directory))
+
+
+def inspect(directory: Path | str = ".") -> dict:
     """Inspect without staging, loading models, or writing runtime files."""
     try:
-        return _status(directory)
+        return _inspect(directory)
     except (OSError, ValueError, objects.RepositoryError, staging_config.ConfigError, AddError, DocumentError) as exc:
         raise StatusError(str(exc)) from exc
 
 
-def _status(directory):
+def _inspect(directory):
     root = objects.find_repository(Path(directory))
     _reject_links(root / ".embeddingvc", root)
     _reject_links(objects.index_path(root), root)
@@ -179,34 +183,48 @@ def _status(directory):
     changed = any(differences[group][kind] for group in ("documents", "chunks") for kind in ("added", "modified", "deleted"))
     config_changed = bool(index["documents"]) and any(
         doc.get("config", index.get("config")) != config for doc in index["documents"].values())
-    lines = [label]
-    for group in ("documents", "chunks"):
-        counts = comparison[group]
-        lines.append(group.capitalize() + ": " + ", ".join(f"{n} {kind}" for kind, n in counts.items()))
-    lines.append(f"Embeddings required: {len(pending)} occurrences ({len(set(pending))} unique model inputs)")
-    if config_changed:
-        lines.append("Staging configuration changed since add.")
-    if stale:
-        lines.append("Embedding configuration changed; matching text has stale vectors.")
-    if issues:
-        lines.append(f"Missing/corrupt object references: {len(issues)} unique chunks; regeneration required.")
-    if changed or config_changed:
-        lines.append("Working state differs from index. Run embeddingvc embed to refresh tracked sources.")
-    else:
-        lines.append("Working state matches index.")
-    if untracked:
-        lines.append("Untracked documents (run embeddingvc add <path>): " + ", ".join(untracked))
+    baseline = head["documents"]
+    changes = {name: ("added" if name not in baseline else "deleted" if name not in working else "modified")
+               for name in sorted(baseline.keys() | working.keys())
+               if baseline.get(name, {}).get("content_hash") != working.get(name, {}).get("content_hash")}
     checkout_marker = root / ".embeddingvc/transactions/checkout.json"
     _reject_links(checkout_marker, root)
-    if checkout_marker.exists():
-        lines.append("Checkout publication is incomplete; retry embeddingvc checkout HEAD to recover.")
+    sync_status = None
     sync_path = root / ".embeddingvc" / "sync.json"
     if sync_path.exists():
         sync = _read(sync_path, root)
         if not isinstance(sync, dict) or sync.get("status") not in {"pending", "failed", "synced"}:
             raise StatusError("Invalid sync.json status")
         sync_status = "pending (checkout recovery required)" if checkout_marker.exists() else sync['status']
-        lines.append(f"Database synchronization: {sync_status}")
-    if not any(comparison[g][k] for g in ("documents", "chunks") for k in ("added", "modified", "deleted", "stale") if k in comparison[g]) and not pending and not untracked and not config_changed:
+    return {"label": label, "documents": comparison["documents"], "chunks": comparison["chunks"],
+            "changes": changes, "pending": len(pending), "pending_unique": len(set(pending)),
+            "config_changed": config_changed, "stale": bool(stale), "issues": len(issues),
+            "index_differs": changed or config_changed, "untracked": untracked,
+            "checkout_incomplete": checkout_marker.exists(), "sync_status": sync_status}
+
+
+def render(report: dict) -> str:
+    lines = [report["label"]]
+    for group in ("documents", "chunks"):
+        lines.append(group.capitalize() + ": " + ", ".join(f"{n} {kind}" for kind, n in report[group].items()))
+    lines.append(f"Embeddings required: {report['pending']} occurrences ({report['pending_unique']} unique model inputs)")
+    if report["config_changed"]:
+        lines.append("Staging configuration changed since add.")
+    if report["stale"]:
+        lines.append("Embedding configuration changed; matching text has stale vectors.")
+    if report["issues"]:
+        lines.append(f"Missing/corrupt object references: {report['issues']} unique chunks; regeneration required.")
+    if report["index_differs"]:
+        lines.append("Working state differs from index. Run embeddingvc embed to refresh tracked sources.")
+    else:
+        lines.append("Working state matches index.")
+    if report["untracked"]:
+        lines.append("Untracked documents (run embeddingvc add <path>): " + ", ".join(report["untracked"]))
+    if report["checkout_incomplete"]:
+        lines.append("Checkout publication is incomplete; retry embeddingvc checkout HEAD to recover.")
+    if report["sync_status"]:
+        lines.append(f"Database synchronization: {report['sync_status']}")
+    if (not any(report[g][k] for g in ("documents", "chunks") for k in ("added", "modified", "deleted", "stale") if k in report[g])
+            and not report["pending"] and not report["untracked"] and not report["config_changed"]):
         lines.append("No document or embedding changes.")
     return "\n".join(lines)

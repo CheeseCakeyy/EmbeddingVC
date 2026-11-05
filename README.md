@@ -2,7 +2,7 @@
 
 Git-inspired version control for embedding collections. Implemented commands:
 `init`, `config`, `add`, `status`, `embed`, `commit`, `branch`, `log`, `diff`,
-`checkout`, and `benchmark`, using Python 3.11+.
+`checkout`, and `benchmark`, using Python 3.11+, plus an interactive shell.
 
 ## Requirements
 
@@ -215,6 +215,34 @@ repository's pinned model. It runs in isolated workspaces and never changes the
 repository's HEAD, index or database. Results, raw measurements and environment
 details are written to `reports/benchmarks/<run-id>/`. See
 [the benchmark guide](docs/benchmark.md) for scenarios, metrics and method.
+
+## Interactive shell
+
+Run `embeddingvc` with no arguments in a terminal to open the shell, or use
+`embeddingvc shell`. It needs the `tui` extra, which `requirements.txt` already
+includes through `.[all]`; on a minimal install, add it with
+`pip install -e ".[tui]"`.
+
+```text
+/add data
+/status
+/embed
+/commit Add research papers
+/log
+/diff
+/report
+```
+
+Type `/` to list commands with autocomplete, and `/help` for the full list.
+Every command calls the same code and takes the same options as the plain CLI,
+so `/benchmark --repeats 1 --scenarios edit-5pct` works as you would expect, and
+scripts can keep using `embeddingvc status` and the rest unchanged. A failed
+command shows an error and the shell keeps running. Ctrl+C cancels the running
+command and Ctrl+D leaves.
+
+`/report` shows the latest benchmark again without rerunning it, which is useful
+in a live demo. Its bars show the texts sent to the model and its times are
+total pipeline time, so read both.
 
 ## Tests
 

@@ -52,10 +52,15 @@ def scenario_list(value: str) -> list[str]:
     return names
 
 
-def app(argv: list[str] | None = None) -> None:
+ERRORS = (RepositoryError, InitializationError, BranchError, ConfigurationError, AddError, StatusError,
+          EmbedError, CommitError, BenchmarkError, OSError)
+
+
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="embeddingvc")
     parser.add_argument("--version", action="version", version=__version__)
     commands = parser.add_subparsers(dest="command", required=True)
+    commands.add_parser("shell", help="Open the interactive shell (the default in a terminal)")
     init = commands.add_parser("init", help="Initialize an embedding repository")
     init.add_argument("directory", nargs="?", type=Path, default=Path("."))
     init.add_argument("--force", action="store_true", help="Replace existing README and config; never reset history")
@@ -93,8 +98,31 @@ def app(argv: list[str] | None = None) -> None:
     bench.add_argument("--model-change-config", help="YAML with a second pinned embedding model and revision")
     bench.add_argument("--warmup", type=nonnegative, default=8, help="Warm-up inputs per model (default 8)")
     bench.add_argument("--keep-workspaces", action="store_true", help="Keep every scenario workspace for inspection")
-    args = parser.parse_args(argv)
+    return parser
+
+
+def shell(parser: argparse.ArgumentParser) -> None:
     try:
+        from .shell.app import run
+    except ModuleNotFoundError as exc:
+        if exc.name not in ("rich", "prompt_toolkit"):
+            raise
+        parser.exit(1, 'Error: The interactive shell needs the tui extra. Install it with: pip install -e ".[tui]"\n')
+    if not (sys.stdin.isatty() and sys.stdout.isatty()):
+        parser.exit(1, "Error: The interactive shell needs an interactive terminal.\n")
+    run()
+
+
+def app(argv: list[str] | None = None) -> None:
+    parser = build_parser()
+    arguments = sys.argv[1:] if argv is None else argv
+    if not arguments and sys.stdin.isatty() and sys.stdout.isatty():
+        arguments = ["shell"]  # Scripts and pipes keep the usage error.
+    args = parser.parse_args(arguments)
+    try:
+        if args.command == "shell":
+            shell(parser)
+            return
         if args.command == "benchmark":
             result = benchmark(seed=args.seed, repeats=args.repeats, documents=args.documents, top_k=args.top_k,
                                scenarios=args.scenarios, model_change_config=args.model_change_config,
@@ -137,7 +165,7 @@ def app(argv: list[str] | None = None) -> None:
                 print(config_set(Path("."), args.key, args.value))
             return
         root = initialize(args.directory, force=args.force)
-    except (RepositoryError, InitializationError, BranchError, ConfigurationError, AddError, StatusError, EmbedError, CommitError, BenchmarkError, OSError) as exc:
+    except ERRORS as exc:
         parser.exit(1, f"Error: {exc}\n")
     print(f"EmbeddingVC repository initialized at {root}.\n")
     print("Next steps:\n1. Add documents to data/\n2. Review embeddingvc.yaml")
