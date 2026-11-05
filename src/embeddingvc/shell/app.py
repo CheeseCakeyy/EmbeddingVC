@@ -8,15 +8,17 @@ import shlex
 from dataclasses import dataclass
 from pathlib import Path
 
+import functools
 import getpass
 import time
 
 from prompt_toolkit.completion import Completer, Completion, PathCompleter
 from prompt_toolkit.document import Document
+from prompt_toolkit.formatted_text import ANSI
 from rich.console import Console
 from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
 
-from . import views
+from . import sprites, views
 from .prompt import InputBox
 from .. import objects, revisions, staging_config
 from ..cli import ERRORS, build_parser
@@ -35,7 +37,8 @@ from ..commands.status import inspect
 from ..repository import initialize
 
 DEFAULT_LOG_LIMIT = 10
-FRAMES_PER_SECOND = 8
+FRAMES_PER_SECOND = 10  # The octopus GIF shows a frame every 100 ms.
+INPUT_ROWS = 4  # The box and status line; an open command list briefly covers the panel edge instead.
 
 
 @dataclass(frozen=True)
@@ -150,7 +153,7 @@ class SlashCompleter(Completer):
 
 
 class Working(Progress):
-    """Live progress with the owl animated beside it."""
+    """Live progress with the octopus animated beside it."""
 
     def get_renderables(self):
         yield views.working(int(time.monotonic() * FRAMES_PER_SECOND), self.make_tasks_table(self.tasks))
@@ -161,14 +164,40 @@ class Shell:
         self.console = console or Console(theme=views.THEME)
         self.parser = build_parser()
         self.running = True
+        self.greeting = True
 
-    def welcome(self) -> None:
+    def welcome_view(self, width: int, frame: int = 0):
+        return views.welcome(*self.facts, user=self.user, path=str(Path.cwd()), width=width, frame=frame)
+
+    def rendered(self, width: int) -> tuple[ANSI, ...]:
+        """Every frame of the welcome block, as text the input box can redraw."""
+        frames = []
+        for frame in range(len(sprites.FRAMES)):
+            target = Console(file=io.StringIO(), width=width, force_terminal=True, color_system="truecolor",
+                             legacy_windows=False, theme=views.THEME)
+            target.print(self.welcome_view(width, frame))
+            frames.append(ANSI(target.file.getvalue().rstrip("\n")))
+        return tuple(frames)
+
+    def greet(self):
+        """Hand the input box the frames to animate, or print the block when it would not fit above the box."""
+        if not self.greeting:
+            return None
+        self.greeting = False
         try:
-            user = getpass.getuser().split()[0]
+            self.user = getpass.getuser().split()[0]
         except (OSError, KeyError, ImportError, IndexError):
-            user = ""
-        self.console.print(views.welcome(repository_summary(), commit_graph(), user=user, path=str(Path.cwd()),
-                                         width=self.console.width))
+            self.user = ""
+        self.facts = (repository_summary(), commit_graph())
+        with self.console.capture() as capture:
+            self.console.print(self.welcome_view(self.console.width))
+        if len(capture.get().splitlines()) + INPUT_ROWS > self.console.height:
+            self.show_welcome()
+            return None
+        return functools.lru_cache(maxsize=1)(self.rendered)
+
+    def show_welcome(self) -> None:
+        self.console.print(self.welcome_view(self.console.width))
 
     def execute(self, line: str) -> None:
         """Run one input line; failures are shown and the shell keeps going."""
@@ -211,7 +240,7 @@ class Shell:
             return (None,)
 
     def progress(self) -> Progress:
-        bar = BarColumn(bar_width=24, style="muted", complete_style="orange", finished_style="orange", pulse_style="orange")
+        bar = BarColumn(bar_width=20, style="muted", complete_style="orange", finished_style="orange", pulse_style="orange")
         return Working(TextColumn("[chalk]{task.description}"), bar, TextColumn("[muted]{task.fields[count]}"),
                        TimeElapsedColumn(), console=self.console, transient=True, refresh_per_second=FRAMES_PER_SECOND)
 
@@ -226,7 +255,7 @@ class Shell:
 
     def run_clear(self) -> None:
         self.console.clear()
-        self.welcome()
+        self.greeting = True
 
     def run_exit(self) -> None:
         self.running = False
@@ -262,7 +291,7 @@ class Shell:
 
     def run_commit(self, args) -> None:
         if args:
-            with self.busy("Saving snapshot and synchronizing Chroma"):
+            with self.busy("Saving snapshot and syncing Chroma"):
                 result = commit(message=args.message)
             self.console.print(views.message(result.render(), title="Committed"))
 
@@ -337,12 +366,16 @@ class Shell:
 
 def run() -> None:
     shell = Shell()
-    shell.welcome()
     box = InputBox(SlashCompleter(), {"/" + command.name for command in COMMANDS if "<" in command.usage})
     while shell.running:
+        hero = shell.greet()
         try:
-            line = box.read(views.toolbar(repository_summary()))
+            line = box.read(views.toolbar(repository_summary()), hero)
         except EOFError:
+            line = None
+        if hero:
+            shell.show_welcome()  # The box erases itself, so the block joins the scrollback here.
+        if line is None:
             break
         if line.strip():
             shell.console.print(views.echo(line))

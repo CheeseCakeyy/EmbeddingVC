@@ -23,9 +23,9 @@ THEME = Theme({"accent": f"bold {ORANGE}", "orange": ORANGE, "muted": GRAY, "cha
                "bad": ROSE, "added": MINT, "modified": BUTTER, "deleted": ROSE, "stale": LILAC, "unchanged": GRAY,
                "metadata_changed": SKY, "sha": BUTTER})
 LANES = (SKY, MINT, LILAC, ROSE, BUTTER)
-LEFT_COLUMN = 34
+LEFT_COLUMN = 35
 SINGLE_COLUMN_BELOW = 84
-WELCOME_TREE_ROWS = 5
+WELCOME_TREE_ROWS = 12
 TREE_ROWS = 30
 BAR_WIDTH = 28
 DRIFT_ROWS = 8
@@ -116,7 +116,7 @@ def _shortened(path: str, width: int) -> str:
     return path if len(path) <= width else "…" + path[-(width - 1):]
 
 
-def welcome(repository: dict | None, graph: dict | None, *, user: str, path: str, width: int) -> Panel:
+def welcome(repository: dict | None, graph: dict | None, *, user: str, path: str, width: int, frame: int = 0) -> Panel:
     if repository:
         head = repository["branch"] or "detached"
         summary = Text(f"{repository['model'] or 'no model configured'} · {head}", style="muted", no_wrap=True, overflow="ellipsis")
@@ -124,7 +124,7 @@ def welcome(repository: dict | None, graph: dict | None, *, user: str, path: str
         summary = Text("No repository in this folder", style="warn")
     greeting = Text(f"Welcome back {user}!" if user else "Welcome back!", style="bold", no_wrap=True, overflow="ellipsis")
     location = Text(_shortened(path, LEFT_COLUMN - 2), style="muted", no_wrap=True)
-    left = Group(*[Align.center(part) for part in (greeting, Text(" "), mascot.still(), Text(" "), summary, location)])
+    left = Group(*[Align.center(part) for part in (greeting, Text(" "), mascot.draw(frame), Text(" "), summary, location)])
     right = Group(_title("Tips for getting started"), *[emphasize(Text(tip, no_wrap=True, overflow="ellipsis"))
                                                        for tip in _tips(repository)],
                   Rule(style="orange"), _title("Recent activity"), *tree_lines(graph, WELCOME_TREE_ROWS))
@@ -140,9 +140,10 @@ def welcome(repository: dict | None, graph: dict | None, *, user: str, path: str
 
 
 def working(frame: int, progress) -> Padding:
-    """The owl at work beside the live progress; redrawn by the shell's Progress."""
+    """The octopus beside the live progress; redrawn by the shell's Progress."""
+    octopus = mascot.draw(frame)
     grid = Table.grid(padding=(0, 3))
-    grid.add_row(mascot.working(frame), Group(Text(""), mascot.chunks(frame), Text(""), progress))
+    grid.add_row(octopus, Padding(progress, (len(octopus.plain.splitlines()) // 2, 0, 0, 0)))
     return Padding(grid, (1, 0, 0, 2))
 
 

@@ -26,7 +26,7 @@ try:
     from prompt_toolkit.output import DummyOutput
     from rich.console import Console
     from rich.text import Text
-    from embeddingvc.shell import app as shell_app, mascot, tree, views
+    from embeddingvc.shell import app as shell_app, mascot, sprites, tree, views
     from embeddingvc.shell.app import COMMANDS, Shell, SlashCompleter, arguments_for, repository_summary, split_line
     from embeddingvc.shell.prompt import InputBox
 except ModuleNotFoundError:
@@ -133,7 +133,9 @@ class ShellTests(unittest.TestCase):
     def test_outside_a_repository(self):
         with tempfile.TemporaryDirectory() as empty, contextlib.chdir(empty):
             self.assertIsNone(repository_summary())
-            self.assertIn("No repository", self.run_line("/clear"))
+            self.run_line("/clear")
+            self.assertIsNone(self.shell.greet())  # This console is too short to animate, so it prints instead.
+            self.assertIn("No repository", self.output.getvalue())
             self.assertIn("/init", views.toolbar(None))
             self.assertIn("Error", self.run_line("/status"))
 
@@ -249,6 +251,29 @@ class PromptLoop(unittest.TestCase):
 
     def test_ctrl_c_keeps_the_prompt_and_ctrl_d_leaves(self):
         self.assertIn("/commit <message>", self.typed("half typed\x03/help\r\x04"))
+
+    def test_welcome_is_kept_once_the_box_erases_itself(self):
+        self.assertEqual(self.typed("\x04").count("Tips for getting started"), 1)
+        output = self.typed("/help\r/clear\r/help\r\x04")
+        self.assertEqual(output.count("Tips for getting started"), 2)
+
+    def test_a_short_terminal_prints_the_welcome_without_animating(self):
+        shell = Shell(Console(file=io.StringIO(), width=100, height=20, theme=views.THEME))
+        with tempfile.TemporaryDirectory() as temp, contextlib.chdir(temp):
+            self.assertIsNone(shell.greet())
+            self.assertIn("Tips for getting started", shell.console.file.getvalue())
+            self.assertIsNone(shell.greet())
+
+    def test_tall_terminal_gets_one_animated_frame_per_mascot_frame(self):
+        shell = Shell(Console(file=io.StringIO(), width=100, height=40, theme=views.THEME))
+        with tempfile.TemporaryDirectory() as temp, contextlib.chdir(temp):
+            hero = shell.greet()
+            self.assertEqual(shell.console.file.getvalue(), "")
+            frames = hero(100)
+            self.assertEqual(len(frames), len(sprites.FRAMES))
+            self.assertGreater(len({frame.value for frame in frames}), 1)
+            self.assertIs(hero(100), frames)
+            self.assertNotEqual(hero(90), frames)
 
 
 class InputKeys(unittest.TestCase):
@@ -373,12 +398,24 @@ class Welcome(unittest.TestCase):
             self.assertIn("abc1234", text)
             self.assertTrue(all(len(line) <= width for line in text.splitlines()), width)
 
-    def test_every_owl_frame_has_the_same_shape(self):
-        stills = [mascot.still(eyes).plain.splitlines() for eyes in mascot.EYES]
-        moving = [mascot.working(frame).plain.splitlines() for frame in range(len(mascot.WORK_CYCLE))]
-        self.assertEqual({(len(rows), len(rows[0])) for rows in stills}, {(6, 14)})
-        self.assertEqual({(len(rows), len(rows[0])) for rows in moving}, {(7, 14)})
-        self.assertGreater(len({"".join(rows) for rows in moving}), 1)
+    def test_mascot_frames_are_complete_and_fit(self):
+        self.assertEqual(len(sprites.FRAMES), 10)
+        for rows in sprites.FRAMES:
+            self.assertIsInstance(rows, tuple)
+            self.assertEqual(len(rows) % 2, 0)  # Each terminal row folds two pixel rows.
+            self.assertLessEqual(set("".join(rows)), {".", *sprites.COLORS})
+        drawn = [mascot.draw(frame).plain for frame in range(len(sprites.FRAMES))]
+        self.assertEqual(len(set(drawn)), len(sprites.FRAMES))
+        self.assertEqual({len(text.splitlines()) for text in drawn}, {len(sprites.FRAMES[0]) // 2})
+        self.assertEqual(len({len(line) for text in drawn for line in text.splitlines()}), 1)
+        self.assertEqual(mascot.draw(len(sprites.FRAMES)).plain, drawn[0])
+        self.assertLessEqual(max(map(len, mascot.draw().plain.splitlines())) + 2, views.LEFT_COLUMN)
+
+    def test_progress_sits_beside_the_octopus(self):
+        output = io.StringIO()
+        Console(file=output, width=100, theme=views.THEME).print(views.working(0, Text("Embedding chunks")))
+        lines = [line for line in output.getvalue().splitlines() if line.strip()]
+        self.assertTrue(any("Embedding chunks" in line and line.split("Embedding")[0].strip() for line in lines))
 
     def test_emphasis_leaves_paths_alone(self):
         text = views.emphasize(Text("Run /embed in reports/benchmarks/ for abc1234f"))
