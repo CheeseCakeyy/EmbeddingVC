@@ -7,11 +7,16 @@ from ..revisions import manifest, resolve_revision
 DiffError = RepositoryError
 
 
-def diff(old: str, new: str, directory: Path | str = ".") -> str:
+def compare(old: str, new: str, directory: Path | str = ".") -> dict:
+    """Return the snapshot comparison with both resolved revisions."""
     root = find_repository(Path(directory))
     left, right = resolve_revision(root, old), resolve_revision(root, new)
-    result = compare_snapshots(root, manifest(root, left), manifest(root, right))
-    lines = [f"Comparing {left} -> {right}"]
+    return {"old": left, "new": right, **compare_snapshots(root, manifest(root, left), manifest(root, right))}
+
+
+def diff(old: str, new: str, directory: Path | str = ".") -> str:
+    result = compare(old, new, directory)
+    lines = [f"Comparing {result['old']} -> {result['new']}"]
     for title, key in (("Documents", "documents"), ("Chunks", "chunks"), ("Embedding objects", "embedding_objects")):
         lines.append(f"{title}: " + ", ".join(f"{count} {kind}" for kind, count in result[key].items()))
     lines.append(f"Configuration changed: {result['config_changed']}; effective embedding configuration changed: {result['embedding_config_changed']}")
