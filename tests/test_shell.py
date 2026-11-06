@@ -394,6 +394,28 @@ class Welcome(unittest.TestCase):
             self.assertIn(expected, text)
         self.assertIn("repo", text)
 
+    def test_spare_rows_are_shared_across_all_four_gaps(self):
+        self.assertEqual(views._spread(8), (2, 2, 2, 2))
+        self.assertEqual(views._spread(9), (3, 2, 2, 2))
+        self.assertEqual(views._spread(10), (3, 2, 2, 3))
+        self.assertEqual(views._spread(11), (3, 3, 2, 3))
+        self.assertEqual(views._spread(-2), (0, 0, 0, 0))
+
+    def test_divider_sits_evenly_between_both_blocks(self):
+        lines = self.rendered(120).splitlines()[1:-1]
+        cells = [line.split("│")[2].rstrip() for line in lines]
+        tips, rule, activity = (next(i for i, cell in enumerate(cells) if mark in cell)
+                                for mark in ("Tips for", "───", "Recent activity"))
+        used = [i for i, cell in enumerate(cells) if cell.strip()]
+        tips_end = max(i for i in used if i < rule)
+        activity_end = max(used)
+        gaps = (tips, rule - tips_end - 1, activity - rule - 1, len(cells) - activity_end - 1)
+        self.assertLessEqual(max(gaps) - min(gaps), 1)
+        self.assertGreater(min(gaps), 0)
+        self.assertEqual(len(cells[tips]) - len(cells[tips].lstrip()), 3)
+        rule_cell = lines[rule].split("│")[2]
+        self.assertEqual(len(rule_cell) - len(rule_cell.lstrip()), len(rule_cell) - len(rule_cell.rstrip()))
+
     def test_two_panes_fold_into_one_when_narrow(self):
         repository = {"branch": "main", "commit": "a" * 64, "model": "m", "documents": 1, "chunks": 1}
         data = {"branch": "main", "head": "a", "tips": {"main": "a"},

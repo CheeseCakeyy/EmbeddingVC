@@ -7,6 +7,7 @@ from rich.align import Align
 from rich.console import Group
 from rich.padding import Padding
 from rich.panel import Panel
+from rich.rule import Rule
 from rich.table import Table
 from rich.text import Text
 from rich.theme import Theme
@@ -26,6 +27,7 @@ LEFT_COLUMN = 35
 SINGLE_COLUMN_BELOW = 84
 WELCOME_TREE_ROWS = 4
 TIP_WIDTH = 12
+RIGHT_PANE_MARGIN = 2  # Added to the table's own padding, so text sits 3 columns from each side.
 TREE_ROWS = 30
 BAR_WIDTH = 28
 DRIFT_ROWS = 8
@@ -115,6 +117,20 @@ def _shortened(path: str, width: int) -> str:
     return path if len(path) <= width else "…" + path[-(width - 1):]
 
 
+def _spread(spare: int) -> tuple[int, ...]:
+    """Share spare rows across the gaps above tips, around the divider and below the activity."""
+    base, extra = divmod(max(spare, 0), 4)
+    return tuple(base + (extra > order) for order in (0, 2, 3, 1))
+
+
+def _right_pane(tips: list[Text], activity: list[Text], height: int) -> Padding:
+    """Two blocks split by a divider, each as far from the divider as from its own edge."""
+    top, above, below, bottom = _spread(height - len(tips) - len(activity) - 1)
+    gap = lambda rows: [Text(" ")] * rows
+    return Padding(Group(*gap(top), *tips, *gap(above), Rule(style="orange"), *gap(below), *activity, *gap(bottom)),
+                   (0, RIGHT_PANE_MARGIN))
+
+
 def welcome(repository: dict | None, graph: dict | None, *, path: str, width: int, frame: int = 0) -> Panel:
     if repository:
         head = repository["branch"] or "detached"
@@ -123,16 +139,18 @@ def welcome(repository: dict | None, graph: dict | None, *, path: str, width: in
         summary = Text("No repository in this folder", style="warn")
     greeting = Text("Welcome back!", style="bold")
     location = Text(_shortened(path, LEFT_COLUMN - 2), style="muted", no_wrap=True)
-    left = Group(*[Align.center(part) for part in (greeting, Text(" "), mascot.draw(frame), Text(" "), summary, location)])
-    right = Group(_title("Tips for getting started"),
-                  *[Text.assemble((command.ljust(TIP_WIDTH), "accent"), (note, "muted")) for command, note in _tips(repository)],
-                  Text(" "), _title("Recent activity"), *tree_lines(graph, WELCOME_TREE_ROWS, compact=True))
+    parts = (greeting, Text(" "), mascot.draw(frame), Text(" "), summary, location)
+    left = Group(*[Align.center(part) for part in parts])
+    tips = [_title("Tips for getting started"),
+            *[Text.assemble((command.ljust(TIP_WIDTH), "accent"), (note, "muted")) for command, note in _tips(repository)]]
+    activity = [_title("Recent activity"), *tree_lines(graph, WELCOME_TREE_ROWS, compact=True)]
     if width < SINGLE_COLUMN_BELOW:
-        body = Group(left, Text(""), right)
+        body = Group(left, Text(""), *tips, Rule(style="orange"), *activity)
     else:
+        right = _right_pane(tips, activity, sum(len(part.plain.splitlines()) or 1 for part in parts))
         body = Table(box=box.MINIMAL, show_header=False, show_edge=False, pad_edge=False, expand=True, border_style="orange")
         body.add_column(width=LEFT_COLUMN)
-        body.add_column(ratio=1, vertical="middle")
+        body.add_column(ratio=1)
         body.add_row(left, right)
     return Panel(body, title=f"[accent]EmbeddingVC[/accent] [orange]v{__version__}[/orange]", title_align="left",
                  border_style="orange", padding=(0, 1))
